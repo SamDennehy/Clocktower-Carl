@@ -280,4 +280,9 @@ if __name__ == "__main__":
     server_thread.start()
 
     TOKEN = os.getenv("DISCORD_TOKEN")
+
+    if not TOKEN:
+        print("ERROR: DISCORD_TOKEN environment variable is not set!")
+    else:
+        print("DISCORD_TOKEN found. Starting Discord bot...")
     bot.run(TOKEN)
