@@ -3,6 +3,12 @@ import discord
 import json
 from discord.ext import commands
 from random import sample, choice
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+TOKEN = os.getenv("DISCORD_TOKEN")
 
 
 townsfolk = ["steward",
@@ -255,4 +261,4 @@ async def choose_storytellers(ctx, *args):
     await ctx.send(f"Storyteller: {chosen[0]} {chosen[1]}")
 
 # Step 5: Start the bot
-bot.run('MTUzNTY3NDQyNjA3MzU1NTA0NA.Gk7EvN.G1N7ip7h-c46BD8oWAZ3Bp5WbDsS5Y_tYOQt1Q')
+bot.run(TOKEN)
