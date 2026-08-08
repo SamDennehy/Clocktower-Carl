@@ -6,9 +6,9 @@ from discord.ext import commands
 from random import sample, choice
 import os
 from dotenv import load_dotenv
-from flask import Flask, app
+from flask import Flask
 
-server = Flask(__name__)
+app = Flask(__name__)
 
 @app.route('/')
 def home():
@@ -17,7 +17,7 @@ def home():
 def run_web_server():
     # Render provides the port dynamically via an environment variable
     port = int(os.environ.get("PORT", 8080))
-    server.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port)
 
 load_dotenv()
 
