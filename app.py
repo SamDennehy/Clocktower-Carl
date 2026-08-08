@@ -273,16 +273,10 @@ async def choose_storytellers(ctx, *args):
 
 # Step 5: Start the bot
 
-if __name__ == "__main__":
-    # Start the Flask server in a separate thread so it doesn't block the bot
-    server_thread = threading.Thread(target=run_web_server)
-    server_thread.daemon = True
-    server_thread.start()
+TOKEN = os.getenv("DISCORD_TOKEN")
 
-    TOKEN = os.getenv("DISCORD_TOKEN")
-
-    if not TOKEN:
-        print("ERROR: DISCORD_TOKEN environment variable is not set!")
-    else:
-        print("DISCORD_TOKEN found. Starting Discord bot...")
-    bot.run(TOKEN)
+if not TOKEN:
+    print("ERROR: DISCORD_TOKEN environment variable is not set!")
+else:
+    print("DISCORD_TOKEN found. Starting Discord bot...")
+bot.run(TOKEN)
