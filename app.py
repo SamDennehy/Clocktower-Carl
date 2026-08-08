@@ -192,10 +192,24 @@ intents.message_content = True  # Required to read message text
 # Step 2: Initialize the bot with a command prefix (e.g., !)
 bot = commands.Bot(command_prefix='!', intents=intents)
 
+character_emojis = {}
+
+
+
 # Step 3: Event that triggers when the bot successfully logs in
 @bot.event
 async def on_ready():
+    global character_emojis
+
+    emojis = await bot.fetch_application_emojis()
+
+    character_emojis = {
+        emoji.name: str(emoji)
+        for emoji in emojis
+    }
+
     print(f'Logged in successfully as {bot.user.name}')
+    print(f'Loaded {len(character_emojis)} application emojis')
 
 def build_download_script_and_preview(values):
     townsfolk_count = values[0]
@@ -237,53 +251,83 @@ def build_download_script_and_preview(values):
 @bot.command()
 async def generate_script(ctx, *args):
     values = [int(x) for x in args]
+
     if len(args) != 5:
         if len(args) == 0:
-            values = [13,4,4,1,0]
+            values = [13, 4, 4, 1, 0]
         else:
             await ctx.send("Please provide either 0 or 5 values.")
             return
 
-
     script = build_download_script_and_preview(values)
+
+    # Create the JSON file
     with open('generated_script.json', 'w') as f:
         json.dump(script[0], f, indent=2)
-    with open('generated_script.json', 'rb') as f:
-            discord_file = discord.File(f, filename="generated_script.json")
 
-    preview = script[1]
-    preview_string = f"SCRIPT PREVIEW:\n"
-    for category, list in preview.items():
-         preview_string += f"{'-'*10}\n{category.upper()}:\n{'-'*10}\n"
-         for character in list:
-              preview_string += f"{character}\n"
-    await ctx.send(preview_string, file=discord_file)
+    with open('generated_script.json', 'rb') as f:
+        discord_file = discord.File(
+            f,
+            filename="generated_script.json"
+        )
+
+        # Create the embed
+        preview = script[1]
+
+        embed = discord.Embed(
+            title="🎲 Fate's Random Script",
+            description="Your randomly generated script has been created!",
+            color=discord.Color.blue()
+        )
+
+        # Add each character category as a field
+        for category, characters in preview.items():
+            if characters:
+                formatted_characters = []
+                for character in characters:
+                    emoji = character_emojis.get(character, "")
+                    if emoji:
+                        formatted_characters.append(f"{emoji} {character}")
+                embed.add_field(
+                    name=category.capitalize(),
+                    value="\n".join(formatted_characters),
+                    inline=False
+                )
+
+        embed.set_footer(text="Fate's Script Generator")
+
+        print(f"Generated script with values: {values}")
+
+        await ctx.send(
+            embed=embed,
+            file=discord_file
+        )
 
 @bot.command()
 async def choose_storyteller(ctx, *args):
     names = [str(x) for x in args]
-
+    print(f"Choosing storyteller from: {names}")
     await ctx.send(f"Storyteller: {choice(names)}")
 
 @bot.command()
 async def choose_storytellers(ctx, *args):
     names = [str(x) for x in args]
     chosen = sample(names, k=2)
+    print(f"Choosing storytellers from: {names}")
     await ctx.send(f"Storyteller: {chosen[0]} {chosen[1]}")
 
 # Step 5: Start the bot
 
-def run_bot():
-    TOKEN = os.getenv("DISCORD_TOKEN")
+#def run_bot():
+TOKEN = os.getenv("DISCORD_TOKEN")
 
-    if not TOKEN:
-        print("ERROR: DISCORD_TOKEN environment variable is not set!")
-        return
+if not TOKEN:
+    print("ERROR: DISCORD_TOKEN environment variable is not set!")
 
-    print("Starting Discord bot...")
-    bot.run(TOKEN)
+print("Starting Discord bot...")
+bot.run(TOKEN)
 
 
-bot_thread = threading.Thread(target=run_bot)
-bot_thread.daemon = True
-bot_thread.start()
+#bot_thread = threading.Thread(target=run_bot)
+#bot_thread.daemon = True
+#bot_thread.start()
