@@ -1,14 +1,23 @@
 import os
+import threading
 import discord
 import json
 from discord.ext import commands
 from random import sample, choice
 import os
 from dotenv import load_dotenv
+from flask import Flask, app
+
+@app.route('/')
+def home():
+    return "Bot is alive!"
+
+def run_web_server():
+    # Render provides the port dynamically via an environment variable
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
 
 load_dotenv()
-
-TOKEN = os.getenv("DISCORD_TOKEN")
 
 
 townsfolk = ["steward",
@@ -261,4 +270,12 @@ async def choose_storytellers(ctx, *args):
     await ctx.send(f"Storyteller: {chosen[0]} {chosen[1]}")
 
 # Step 5: Start the bot
-bot.run(TOKEN)
+
+if __name__ == "__main__":
+    # Start the Flask server in a separate thread so it doesn't block the bot
+    server_thread = threading.Thread(target=run_web_server)
+    server_thread.daemon = True
+    server_thread.start()
+
+    TOKEN = os.getenv("DISCORD_TOKEN")
+    bot.run(TOKEN)
