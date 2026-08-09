@@ -378,7 +378,7 @@ class ForceCharacter(discord.ui.View):
     
 @bot.command()
 async def force_character(ctx):
-    await ctx.respond("Choose a character to force into the script:", view=ForceCharacter())
+    await ctx.send("Choose a character to force into the script:", view=ForceCharacter())
 
 
 # Step 5: Start the bot
