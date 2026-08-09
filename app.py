@@ -344,31 +344,31 @@ class ForceCharacter(discord.ui.View):
             discord.SelectOption(
                 label=character,
                 value=f"{character},townsfolk"
-            ),
+            )
             for character in townsfolk
         ]+[
             discord.SelectOption(
                 label=character,
                 value=f"{character},outsiders"
-            ),
+            )
             for character in outsiders
         ]+[
             discord.SelectOption(
                 label=character,
                 value=f"{character},minions"
-            ),
+            )
             for character in minions
         ]+[
             discord.SelectOption(
                 label=character,
                 value=f"{character},demons"
-            ),
+            )
             for character in demons
         ]+[
             discord.SelectOption(
                 label=character,
                 value=f"{character},npcs"
-            ),
+            )
             for character in npcs
         ]
     )
