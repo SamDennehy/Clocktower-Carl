@@ -374,7 +374,8 @@ class ForceCharacter(discord.ui.View):
     )
     async def force_callback(self, select, interaction):
         await interaction.response.send_message("Selected characters will be present in the next script")
-        forced_characters.append(select.value)
+        for value in select.values:
+            forced_characters.append(value)
     
 @bot.command()
 async def force_character(ctx):
