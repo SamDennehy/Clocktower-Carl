@@ -185,6 +185,8 @@ npcs = ["zenomancer",
   "revolutionary"]
 characters = townsfolk + outsiders + minions + demons + npcs
 
+forced_characters = []
+
 # Step 1: Configure permissions (intents)
 intents = discord.Intents.default()
 intents.message_content = True  # Required to read message text
@@ -193,8 +195,6 @@ intents.message_content = True  # Required to read message text
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 character_emojis = {}
-
-
 
 # Step 3: Event that triggers when the bot successfully logs in
 @bot.event
@@ -211,7 +211,7 @@ async def on_ready():
     print(f'Logged in successfully as {bot.user.name}')
     print(f'Loaded {len(character_emojis)} application emojis')
 
-def build_download_script_and_preview(values):
+def build_download_script_and_preview(values, required):
     townsfolk_count = values[0]
     outsiders_count = values[1]
     minions_count = values[2]
@@ -233,6 +233,27 @@ def build_download_script_and_preview(values):
     chosen_minions = sample(minions, k=min(minions_count, len(minions)))
     chosen_demons = sample(demons, k=min(demons_count, len(demons)))
     chosen_npcs = sample(npcs, k=min(npcs_count, len(npcs)))
+
+    for character_tuple in forced_characters:
+        character = character_tuple[0]
+        category = character_tuple[1]
+
+        match category:
+            case "townsfolk":
+                result = chosen_townsfolk
+            case "outsiders":
+                result = chosen_outsiders
+            case "minions":
+                result = chosen_minions
+            case "demons":
+                result = chosen_demons
+            case "npcs":
+                result = chosen_npcs
+
+        if character not in result:
+            result[0] = character
+
+    forced_characters = []
 
     generated_script.extend(chosen_townsfolk)
     generated_script.extend(chosen_outsiders)
@@ -277,7 +298,7 @@ async def generate_script(ctx, *args):
         embed = discord.Embed(
             title="🎲 Fate's Random Script",
             description="Your randomly generated script has been created!",
-            color=discord.Color.blue()
+            color=discord.Color.purple()
         )
 
         # Add each character category as a field
@@ -316,8 +337,47 @@ async def choose_storytellers(ctx, *args):
     print(f"Choosing storytellers from: {names}")
     await ctx.send(f"Storyteller: {chosen[0]} {chosen[1]}")
 
-# Step 5: Start the bot
+class ForceCharacter(discord.ui.View):
+    @discord.ui.select(
+        placeholder = "Choose a character to force into the script:",
+        options = [
+            discord.SelectOption(
+                label=character,
+                value=(character,"townsfolk")
+            ),
+            for character in townsfolk
+            discord.SelectOption(
+                label=character,
+                value=(character,"outsiders")
+            ),
+            for character in outsiders
+            discord.SelectOption(
+                label=character,
+                value=(character,"minions")
+            ),
+            for character in minions
+            discord.SelectOption(
+                label=character,
+                value=(character,"demons")
+            ),
+            for character in demons
+            discord.SelectOption(
+                label=character,
+                value=(character,"npcs")
+            ),
+            for character in npcs
+        ]
+    )
+    async def force_callback(self, select, interaction):
+        await interaction.response.send_message("Selected characters will be present in the next script")
+        forced_characters.append(select.value)
+    
+@bot.command()
+async def force(ctx):
+    await ctx.respond("Choose a character to force into the script:", view=ForceCharacter())
 
+
+# Step 5: Start the bot
 def run_bot():
     TOKEN = os.getenv("DISCORD_TOKEN")
 
