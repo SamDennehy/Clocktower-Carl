@@ -234,9 +234,9 @@ def build_download_script_and_preview(values, required):
     chosen_demons = sample(demons, k=min(demons_count, len(demons)))
     chosen_npcs = sample(npcs, k=min(npcs_count, len(npcs)))
 
-    for character_tuple in forced_characters:
-        character = character_tuple[0]
-        category = character_tuple[1]
+    for character_string in forced_characters:
+        character = character_string.split(",")[0]
+        category = character_string.split(",")[1]
 
         match category:
             case "townsfolk":
@@ -343,27 +343,31 @@ class ForceCharacter(discord.ui.View):
         options = [
             discord.SelectOption(
                 label=character,
-                value=(character,"townsfolk")
+                value=f"{character},townsfolk"
             ),
             for character in townsfolk
+        ]+[
             discord.SelectOption(
                 label=character,
-                value=(character,"outsiders")
+                value=f"{character},outsiders"
             ),
             for character in outsiders
+        ]+[
             discord.SelectOption(
                 label=character,
-                value=(character,"minions")
+                value=f"{character},minions"
             ),
             for character in minions
+        ]+[
             discord.SelectOption(
                 label=character,
-                value=(character,"demons")
+                value=f"{character},demons"
             ),
             for character in demons
+        ]+[
             discord.SelectOption(
                 label=character,
-                value=(character,"npcs")
+                value=f"{character},npcs"
             ),
             for character in npcs
         ]
