@@ -324,16 +324,16 @@ async def generate_script(ctx, *args):
 
 @bot.command()
 async def choose_storyteller(ctx, *args):
-    names = [str(x) for x in args]
-    print(f"Choosing storyteller from: {names}")
-    await ctx.send(f"Storyteller: {choice(names)}")
-
-@bot.command()
-async def choose_storytellers(ctx, *args):
-    names = [str(x) for x in args]
-    chosen = sample(names, k=2)
+    num = 1
+    names = []
+    if isinstance(args[0], int):
+        num = args[0]
+        names = [str(x) for x in args[1:]]
+    else:
+        names = [str(x) for x in args]
+    chosen = sample(names, k=num)
     print(f"Choosing storytellers from: {names}")
-    await ctx.send(f"Storyteller: {chosen[0]} {chosen[1]}")
+    await ctx.send("Storyteller: ".join(f"{name} " for name in chosen))
 
 # Step 5: Start the bot
 def run_bot():
@@ -344,7 +344,6 @@ def run_bot():
 
     print("Starting Discord bot...")
     bot.run(TOKEN)
-
 
 bot_thread = threading.Thread(target=run_bot)
 bot_thread.daemon = True
