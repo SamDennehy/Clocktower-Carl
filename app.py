@@ -3,26 +3,10 @@ import threading
 import discord
 import json
 from discord.ext import commands
-from random import sample, choice
-import os
+from random import sample
 from dotenv import load_dotenv
 from flask import Flask
-from numpy import select
 import sqlite3
-
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return "Bot is alive!"
-
-def run_web_server():
-    # Render provides the port dynamically via an environment variable
-    port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port)
-
-load_dotenv()
-
 
 townsfolk = ["steward",
   "knight",
@@ -187,19 +171,30 @@ npcs = ["zenomancer",
   "revolutionary"]
 characters = townsfolk + outsiders + minions + demons + npcs
 
-# Step 1: Configure permissions (intents)
-intents = discord.Intents.default()
-intents.message_content = True  # Required to read message text
+app = Flask(__name__)
 
-# Step 2: Initialize the bot with a command prefix (e.g., !)
+@app.route('/')
+def home():
+    return "Bot is alive!"
+
+def run_web_server():
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
+
+load_dotenv()
+
+intents = discord.Intents.default()
+intents.message_content = True
+
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 character_emojis = {}
+synced = False
 
-# Step 3: Event that triggers when the bot successfully logs in
+
 @bot.event
 async def on_ready():
-    global character_emojis
+    global character_emojis, synced
 
     emojis = await bot.fetch_application_emojis()
 
@@ -208,10 +203,14 @@ async def on_ready():
         for emoji in emojis
     }
 
-    print(f'Logged in successfully as {bot.user.name}')
-    print(f'Loaded {len(character_emojis)} application emojis')
+    if not synced:
+        await bot.tree.sync()
+        synced = True
+        print("Slash commands synced.")
 
-def build_download_script_and_preview(values, required):
+    print(f"Logged in successfully as {bot.user.name}")
+    print(f"Loaded {len(character_emojis)} application emojis")
+def build_download_script_and_preview(values):
     townsfolk_count = values[0]
     outsiders_count = values[1]
     minions_count = values[2]
@@ -234,27 +233,6 @@ def build_download_script_and_preview(values, required):
     chosen_demons = sample(demons, k=min(demons_count, len(demons)))
     chosen_npcs = sample(npcs, k=min(npcs_count, len(npcs)))
 
-    for character_string in forced_characters:
-        character = character_string.split(",")[0]
-        category = character_string.split(",")[1]
-
-        match category:
-            case "townsfolk":
-                result = chosen_townsfolk
-            case "outsiders":
-                result = chosen_outsiders
-            case "minions":
-                result = chosen_minions
-            case "demons":
-                result = chosen_demons
-            case "npcs":
-                result = chosen_npcs
-
-        if character not in result:
-            result[0] = character
-
-    forced_characters = []
-
     generated_script.extend(chosen_townsfolk)
     generated_script.extend(chosen_outsiders)
     generated_script.extend(chosen_minions)
@@ -269,30 +247,64 @@ def build_download_script_and_preview(values, required):
 
     return [generated_script, preview_dict]
 
-@bot.command()
-async def generate_script(ctx, *args):
-    values = [int(x) for x in args]
+@bot.tree.command(name="generate_script")
+@discord.app_commands.describe(
+    townsfolk_count="Number of Townsfolk",
+    outsider_count="Number of Outsiders",
+    minion_count="Number of Minions",
+    demon_count="Number of Demons",
+    npc_count="Number of NPCs"
+)
+async def generate_script(
+    interaction: discord.Interaction,
+    townsfolk_count: int | None = None,
+    outsider_count: int | None = None,
+    minion_count: int | None = None,
+    demon_count: int | None = None,
+    npc_count: int | None = None
+):
+    if all(value is None for value in [
+        townsfolk_count,
+        outsider_count,
+        minion_count,
+        demon_count,
+        npc_count
+    ]):
+        values = [13, 4, 4, 1, 0]
 
-    if len(args) != 5:
-        if len(args) == 0:
-            values = [13, 4, 4, 1, 0]
-        else:
-            await ctx.send("Please provide either 0 or 5 values.")
-            return
+    elif any(value is None for value in [
+        townsfolk_count,
+        outsider_count,
+        minion_count,
+        demon_count,
+        npc_count
+    ]):
+        await interaction.response.send_message(
+            "Please provide either 0 or all 5 values.",
+            ephemeral=True
+        )
+        return
+
+    else:
+        values = [
+            townsfolk_count,
+            outsider_count,
+            minion_count,
+            demon_count,
+            npc_count
+        ]
 
     script = build_download_script_and_preview(values)
 
-    # Create the JSON file
-    with open('generated_script.json', 'w') as f:
+    with open("generated_script.json", "w") as f:
         json.dump(script[0], f, indent=2)
 
-    with open('generated_script.json', 'rb') as f:
+    with open("generated_script.json", "rb") as f:
         discord_file = discord.File(
             f,
             filename="generated_script.json"
         )
 
-        # Create the embed
         preview = script[1]
 
         embed = discord.Embed(
@@ -301,14 +313,18 @@ async def generate_script(ctx, *args):
             color=discord.Color.purple()
         )
 
-        # Add each character category as a field
         for category, characters in preview.items():
             if characters:
                 formatted_characters = []
+
                 for character in characters:
                     emoji = character_emojis.get(character, "")
+
                     if emoji:
-                        formatted_characters.append(f"{emoji} {character}")
+                        formatted_characters.append(
+                            f"{emoji} {character}"
+                        )
+
                 embed.add_field(
                     name=category.capitalize(),
                     value="\n".join(formatted_characters),
@@ -319,25 +335,50 @@ async def generate_script(ctx, *args):
 
         print(f"Generated script with values: {values}")
 
-        await ctx.send(
+        await interaction.response.send_message(
             embed=embed,
             file=discord_file
         )
 
-@bot.command()
-async def choose_storyteller(ctx, *args):
-    num = 1
-    names = []
-    if isinstance(args[0], int):
-        num = args[0]
-        names = [str(x) for x in args[1:]]
-    else:
-        names = [str(x) for x in args]
-    chosen = sample(names, k=num)
-    print(f"Choosing storytellers from: {names}")
-    await ctx.send("Storyteller: ".join(f"{name} " for name in chosen))
+@bot.tree.command(name="choose_storyteller")
+@discord.app_commands.describe(
+    num="Number of storytellers to choose",
+    names="Names separated by commas"
+)
+async def choose_storyteller(
+    interaction: discord.Interaction,
+    names: str,
+    num: int = 1
+):
+    names = [
+        name.strip()
+        for name in names.split(",")
+        if name.strip()
+    ]
 
-class InputAllignment(discord.ui.View):
+    if num < 1:
+        await interaction.response.send_message(
+            "The number of storytellers must be at least 1.",
+            ephemeral=True
+        )
+        return
+
+    if num > len(names):
+        await interaction.response.send_message(
+            "You cannot choose more storytellers than there are names.",
+            ephemeral=True
+        )
+        return
+
+    chosen = sample(names, k=num)
+
+    print(f"Choosing storytellers from: {names}")
+
+    await interaction.response.send_message(
+        "Storyteller: " + ", ".join(chosen)
+    )
+
+class InputAlignment(discord.ui.View):
     def __init__(self, user):
         super().__init__()
         self.user = user
@@ -372,13 +413,15 @@ class InputAllignment(discord.ui.View):
         if choice == "Good":
             await interaction.response.send_message(
                 "Choose a Good character type:",
-                view=InputGoodType()
+                view=InputGoodType(self.user),
+                ephemeral=True
             )
 
         elif choice == "Evil":
             await interaction.response.send_message(
                 "Choose an Evil character type:",
-                view=InputEvilType()
+                view=InputEvilType(self.user),
+                ephemeral=True
             )
 class InputGoodType(discord.ui.View):
     def __init__(self, user):
@@ -416,8 +459,10 @@ class InputGoodType(discord.ui.View):
         choices = ", ".join(select.values)
 
         await interaction.response.send_message(
-            f"You chose: {choices}"
-        )
+            "Input your game results:",
+            view=InputResults(self.user),
+            ephemeral=True
+        )  
 class InputEvilType(discord.ui.View):
     def __init__(self, user):
         super().__init__()
@@ -454,23 +499,22 @@ class InputEvilType(discord.ui.View):
         choices = ", ".join(select.values)
 
         await interaction.response.send_message(
-            f"You chose: {choices}"
-        )
+            "Input your game results:",
+            view=InputResults(self.user),
+            ephemeral=True
+        )      
 class InputResults(discord.ui.View):
     def __init__(self, user):
         super().__init__()
         self.user = user
+
     @discord.ui.select(
         placeholder="Input your game results",
         min_values=1,
         max_values=1,
         options=[
-            discord.SelectOption(
-                label="Win"
-            ),
-            discord.SelectOption(
-                label="Lose"
-            ),
+            discord.SelectOption(label="Win"),
+            discord.SelectOption(label="Lose"),
         ]
     )
     async def select_callback(
@@ -478,30 +522,38 @@ class InputResults(discord.ui.View):
         interaction: discord.Interaction,
         select: discord.ui.Select
     ):
-        choices = ", ".join(select.values)
+        if interaction.user != self.user:
+            await interaction.response.send_message(
+                "This menu isn't for you.",
+                ephemeral=True
+            )
+            return
+
+        choice = select.values[0]
 
         await interaction.response.send_message(
-            f"You chose: {choices}"
+            f"You chose: {choice}",
+            ephemeral=True
         )
 
-@bot.command()
-async def log_stats(ctx):
-    await ctx.send(
-        "Choose an Allignment",
-        view=InputAllignment()
+@bot.tree.command(name="log_stats")
+async def log_stats(interaction: discord.Interaction):
+    await interaction.response.send_message(
+        "Choose an Alignment",
+        view=InputAlignment(interaction.user),
+        ephemeral=True
     )
-    
 
 # Step 5: Start the bot
-def run_bot():
-    TOKEN = os.getenv("DISCORD_TOKEN")
+#def run_bot():
+TOKEN = os.getenv("DISCORD_TOKEN")
 
-    if not TOKEN:
-        print("ERROR: DISCORD_TOKEN environment variable is not set!")
+if not TOKEN:
+    print("ERROR: DISCORD_TOKEN environment variable is not set!")
 
-    print("Starting Discord bot...")
-    bot.run(TOKEN)
+print("Starting Discord bot...")
+bot.run(TOKEN)
 
-bot_thread = threading.Thread(target=run_bot)
-bot_thread.daemon = True
-bot_thread.start()
+#bot_thread = threading.Thread(target=run_bot)
+#bot_thread.daemon = True
+#bot_thread.start()
