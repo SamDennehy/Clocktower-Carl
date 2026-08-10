@@ -7,6 +7,8 @@ from random import sample, choice
 import os
 from dotenv import load_dotenv
 from flask import Flask
+from numpy import select
+import sqlite3
 
 app = Flask(__name__)
 
@@ -294,7 +296,7 @@ async def generate_script(ctx, *args):
         preview = script[1]
 
         embed = discord.Embed(
-            title="🎲 Fate's Random Script",
+            title="🎲 Fred's Random Script",
             description="Your randomly generated script has been created!",
             color=discord.Color.purple()
         )
@@ -313,7 +315,7 @@ async def generate_script(ctx, *args):
                     inline=False
                 )
 
-        embed.set_footer(text="Fate's Script Generator")
+        embed.set_footer(text="Fred's Script Generator")
 
         print(f"Generated script with values: {values}")
 
@@ -334,6 +336,161 @@ async def choose_storyteller(ctx, *args):
     chosen = sample(names, k=num)
     print(f"Choosing storytellers from: {names}")
     await ctx.send("Storyteller: ".join(f"{name} " for name in chosen))
+
+class InputAllignment(discord.ui.View):
+    def __init__(self, user):
+        super().__init__()
+        self.user = user
+    @discord.ui.select(
+        placeholder="Choose an allignment",
+        min_values=1,
+        max_values=1,
+        options=[
+            discord.SelectOption(
+                label="Good"
+            ),
+            discord.SelectOption(
+                label="Evil"
+            ),
+        ]
+    )
+    async def select_callback(
+        self,
+        interaction: discord.Interaction,
+        select: discord.ui.Select
+    ):
+        # Check who clicked the menu FIRST
+        if interaction.user != self.user:
+            await interaction.response.send_message(
+                "This menu isn't for you fuckhead.",
+                ephemeral=True
+            )
+            return
+
+        choice = select.values[0]
+
+        if choice == "Good":
+            await interaction.response.send_message(
+                "Choose a Good character type:",
+                view=InputGoodType()
+            )
+
+        elif choice == "Evil":
+            await interaction.response.send_message(
+                "Choose an Evil character type:",
+                view=InputEvilType()
+            )
+class InputGoodType(discord.ui.View):
+    def __init__(self, user):
+        super().__init__()
+        self.user = user
+    @discord.ui.select(
+        placeholder="Choose a character type",
+        min_values=1,
+        max_values=1,
+        options=[
+            discord.SelectOption(
+                label="Townsfolk"
+            ),
+            discord.SelectOption(
+                label="Outsider"
+            ),
+            discord.SelectOption(
+                label="Traveller"
+            ),
+        ]
+    )
+    async def select_callback(
+        self,
+        interaction: discord.Interaction,
+        select: discord.ui.Select
+    ):
+        # Check who clicked the menu FIRST
+        if interaction.user != self.user:
+            await interaction.response.send_message(
+                "This menu isn't for you fuckhead.",
+                ephemeral=True
+            )
+            return
+        
+        choices = ", ".join(select.values)
+
+        await interaction.response.send_message(
+            f"You chose: {choices}"
+        )
+class InputEvilType(discord.ui.View):
+    def __init__(self, user):
+        super().__init__()
+        self.user = user
+    @discord.ui.select(
+        placeholder="Choose a character type",
+        min_values=1,
+        max_values=1,
+        options=[
+            discord.SelectOption(
+                label="Minion"
+            ),
+            discord.SelectOption(
+                label="Demon"
+            ),
+            discord.SelectOption(
+                label="Traveller"
+            ),
+        ]
+    )
+    async def select_callback(
+        self,
+        interaction: discord.Interaction,
+        select: discord.ui.Select
+    ):
+        # Check who clicked the menu FIRST
+        if interaction.user != self.user:
+            await interaction.response.send_message(
+                "This menu isn't for you fuckhead.",
+                ephemeral=True
+            )
+            return
+        
+        choices = ", ".join(select.values)
+
+        await interaction.response.send_message(
+            f"You chose: {choices}"
+        )
+class InputResults(discord.ui.View):
+    def __init__(self, user):
+        super().__init__()
+        self.user = user
+    @discord.ui.select(
+        placeholder="Input your game results",
+        min_values=1,
+        max_values=1,
+        options=[
+            discord.SelectOption(
+                label="Win"
+            ),
+            discord.SelectOption(
+                label="Lose"
+            ),
+        ]
+    )
+    async def select_callback(
+        self,
+        interaction: discord.Interaction,
+        select: discord.ui.Select
+    ):
+        choices = ", ".join(select.values)
+
+        await interaction.response.send_message(
+            f"You chose: {choices}"
+        )
+
+@bot.command()
+async def log_stats(ctx):
+    await ctx.send(
+        "Choose an Allignment",
+        view=InputAllignment()
+    )
+    
 
 # Step 5: Start the bot
 def run_bot():
