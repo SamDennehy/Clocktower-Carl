@@ -8,6 +8,59 @@ from dotenv import load_dotenv
 from flask import Flask
 import sqlite3
 
+connection = sqlite3.connect("fred_stats.db")
+cursor = connection.cursor()
+
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS player_stats (
+        discord_id INTEGER PRIMARY KEY,
+
+        townsfolk_games INTEGER DEFAULT 0,
+        townsfolk_wins INTEGER DEFAULT 0,
+
+        outsider_games INTEGER DEFAULT 0,
+        outsider_wins INTEGER DEFAULT 0,
+
+        traveller_games INTEGER DEFAULT 0,
+        traveller_wins INTEGER DEFAULT 0,
+
+        minion_games INTEGER DEFAULT 0,
+        minion_wins INTEGER DEFAULT 0,
+
+        demon_games INTEGER DEFAULT 0,
+        demon_wins INTEGER DEFAULT 0
+    )
+""")
+
+connection.commit()
+
+def create_player(discord_id):
+    cursor.execute("""
+        UPDATE player_stats
+        SET townsfolk_games = townsfolk_games + 1,
+            townsfolk_wins = townsfolk_wins + 1
+        WHERE discord_id = ?
+    """, (discord_id,))
+
+def record_game_result(discord_id, alignment, character_type, result):
+    column_prefix = f"{character_type.lower()}_"
+
+    if result == "Win":
+        cursor.execute(f"""
+            UPDATE player_stats
+            SET {column_prefix}games = {column_prefix}games + 1,
+                {column_prefix}wins = {column_prefix}wins + 1
+            WHERE discord_id = ?
+        """, (discord_id,))
+    else:
+        cursor.execute(f"""
+            UPDATE player_stats
+            SET {column_prefix}games = {column_prefix}games + 1
+            WHERE discord_id = ?
+        """, (discord_id,))
+
+    connection.commit()
+
 townsfolk = ["steward",
   "knight",
   "chef",
@@ -308,7 +361,7 @@ async def generate_script(
         preview = script[1]
 
         embed = discord.Embed(
-            title="🎲 Fred's Random Script",
+            title="🎲 Carl's Random Script",
             description="Your randomly generated script has been created!",
             color=discord.Color.purple()
         )
@@ -408,6 +461,8 @@ class InputAlignment(discord.ui.View):
             )
             return
 
+        discord_id = interaction.user.id
+
         choice = select.values[0]
 
         if choice == "Good":
@@ -424,9 +479,10 @@ class InputAlignment(discord.ui.View):
                 ephemeral=True
             )
 class InputGoodType(discord.ui.View):
-    def __init__(self, user):
+    def __init__(self, user, alignment):
         super().__init__()
         self.user = user
+        self.alignment = alignment
     @discord.ui.select(
         placeholder="Choose a character type",
         min_values=1,
@@ -464,9 +520,10 @@ class InputGoodType(discord.ui.View):
             ephemeral=True
         )  
 class InputEvilType(discord.ui.View):
-    def __init__(self, user):
+    def __init__(self, user, alignment):
         super().__init__()
         self.user = user
+        self.alignment = alignment
     @discord.ui.select(
         placeholder="Choose a character type",
         min_values=1,
@@ -504,9 +561,11 @@ class InputEvilType(discord.ui.View):
             ephemeral=True
         )      
 class InputResults(discord.ui.View):
-    def __init__(self, user):
+    def __init__(self, user, alignment, character_type):
         super().__init__()
         self.user = user
+        self.alignment = alignment
+        self.character_type = character_type
 
     @discord.ui.select(
         placeholder="Input your game results",
