@@ -185,8 +185,6 @@ npcs = ["zenomancer",
   "revolutionary"]
 characters = townsfolk + outsiders + minions + demons + npcs
 
-forced_characters = []
-
 # Step 1: Configure permissions (intents)
 intents = discord.Intents.default()
 intents.message_content = True  # Required to read message text
@@ -336,51 +334,6 @@ async def choose_storytellers(ctx, *args):
     chosen = sample(names, k=2)
     print(f"Choosing storytellers from: {names}")
     await ctx.send(f"Storyteller: {chosen[0]} {chosen[1]}")
-
-class ForceCharacter(discord.ui.View):
-    @discord.ui.select(
-        placeholder = "Choose a character to force into the script:",
-        options = [
-            discord.SelectOption(
-                label=character,
-                value=f"{character},townsfolk"
-            )
-            for character in townsfolk
-        ]+[
-            discord.SelectOption(
-                label=character,
-                value=f"{character},outsiders"
-            )
-            for character in outsiders
-        ]+[
-            discord.SelectOption(
-                label=character,
-                value=f"{character},minions"
-            )
-            for character in minions
-        ]+[
-            discord.SelectOption(
-                label=character,
-                value=f"{character},demons"
-            )
-            for character in demons
-        ]+[
-            discord.SelectOption(
-                label=character,
-                value=f"{character},npcs"
-            )
-            for character in npcs
-        ]
-    )
-    async def force_callback(self, select, interaction):
-        await interaction.response.send_message("Selected characters will be present in the next script")
-        for value in select.values:
-            forced_characters.append(value)
-    
-@bot.command()
-async def force_character(ctx):
-    await ctx.send("Choose a character to force into the script:", view=ForceCharacter())
-
 
 # Step 5: Start the bot
 def run_bot():
