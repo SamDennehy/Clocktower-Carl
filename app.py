@@ -512,7 +512,7 @@ class InputGoodType(discord.ui.View):
             )
             return
         
-        choices = select.values[0]
+        choice = select.values[0]
 
         await interaction.response.send_message(
             "Input your game results:",
@@ -553,7 +553,7 @@ class InputEvilType(discord.ui.View):
             )
             return
         
-          choices = select.values[0]
+        choice = select.values[0]
 
         await interaction.response.send_message(
             "Input your game results:",
