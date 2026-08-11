@@ -468,14 +468,14 @@ class InputAlignment(discord.ui.View):
         if choice == "Good":
             await interaction.response.send_message(
                 "Choose a Good character type:",
-                view=InputGoodType(self.user),
+                view=InputGoodType(self.user, choice),
                 ephemeral=True
             )
 
         elif choice == "Evil":
             await interaction.response.send_message(
                 "Choose an Evil character type:",
-                view=InputEvilType(self.user),
+                view=InputEvilType(self.user, choice),
                 ephemeral=True
             )
 class InputGoodType(discord.ui.View):
