@@ -512,11 +512,11 @@ class InputGoodType(discord.ui.View):
             )
             return
         
-        choices = ", ".join(select.values)
+        choices = select.values[0]
 
         await interaction.response.send_message(
             "Input your game results:",
-            view=InputResults(self.user),
+            view=InputResults(self.user, self.alignment, choice),
             ephemeral=True
         )  
 class InputEvilType(discord.ui.View):
@@ -553,11 +553,11 @@ class InputEvilType(discord.ui.View):
             )
             return
         
-        choices = ", ".join(select.values)
+          choices = select.values[0]
 
         await interaction.response.send_message(
             "Input your game results:",
-            view=InputResults(self.user),
+            view=InputResults(self.user, self.alignment, choice),
             ephemeral=True
         )      
 class InputResults(discord.ui.View):
