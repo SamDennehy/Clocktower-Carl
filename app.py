@@ -44,22 +44,34 @@ def create_player(discord_id):
 
 def record_game_result(discord_id, alignment, character_type, result):
     column_prefix = f"{character_type.lower()}_"
+    alignment_prefix = f"{alignment.lower()}_"
 
     if result == "Win":
         cursor.execute(f"""
             UPDATE player_stats
             SET {column_prefix}games = {column_prefix}games + 1,
-                {column_prefix}wins = {column_prefix}wins + 1
+                {column_prefix}wins = {column_prefix}wins + 1,
+                {alignment_prefix}games = {alignment_prefix}games + 1,
+                {alignment_prefix}wins = {alignment_prefix}wins + 1
             WHERE discord_id = ?
         """, (discord_id,))
     else:
         cursor.execute(f"""
             UPDATE player_stats
-            SET {column_prefix}games = {column_prefix}games + 1
+            SET {column_prefix}games = {column_prefix}games + 1,
+                {alignment_prefix}games = {alignment_prefix}games + 1
             WHERE discord_id = ?
         """, (discord_id,))
 
     connection.commit()
+
+def get_player_stats(discord_id):
+    cursor.execute("""
+        SELECT *
+        FROM player_stats
+        WHERE discord_id = ?
+    """, (discord_id,))
+    return cursor.fetchone()
 
 townsfolk = ["steward",
   "knight",
