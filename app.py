@@ -480,14 +480,14 @@ class InputAlignment(discord.ui.View):
         if choice == "Good":
             await interaction.response.send_message(
                 "Choose a Good character type:",
-                view=InputGoodType(self.user),
+                view=InputGoodType(self.user, choice),
                 ephemeral=True
             )
 
         elif choice == "Evil":
             await interaction.response.send_message(
                 "Choose an Evil character type:",
-                view=InputEvilType(self.user),
+                view=InputEvilType(self.user, choice),
                 ephemeral=True
             )
 class InputGoodType(discord.ui.View):
@@ -524,11 +524,11 @@ class InputGoodType(discord.ui.View):
             )
             return
         
-        choices = ", ".join(select.values)
+        choice = select.values[0]
 
         await interaction.response.send_message(
             "Input your game results:",
-            view=InputResults(self.user),
+            view=InputResults(self.user, self.alignment, choice),
             ephemeral=True
         )  
 class InputEvilType(discord.ui.View):
@@ -565,11 +565,11 @@ class InputEvilType(discord.ui.View):
             )
             return
         
-        choices = ", ".join(select.values)
+        choice = select.values[0]
 
         await interaction.response.send_message(
             "Input your game results:",
-            view=InputResults(self.user),
+            view=InputResults(self.user, self.alignment, choice),
             ephemeral=True
         )      
 class InputResults(discord.ui.View):
