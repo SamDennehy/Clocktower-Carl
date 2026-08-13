@@ -798,7 +798,7 @@ async def display_stats(interaction: discord.Interaction):
 
     await interaction.response.send_message(
         embed=embed,
-        ephemeral=True
+        ephemeral=False
     )
 
 # Step 5: Start the bot
