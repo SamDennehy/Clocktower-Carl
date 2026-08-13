@@ -746,31 +746,31 @@ async def display_stats(interaction: discord.Interaction):
     )
 
     embed.add_field(
-        name="Townsfolk",
+        name=character_emojis.get("townsfolk", "") + "Townsfolk",
         value=f"Games: {townsfolk_games}, Wins: {townsfolk_wins}",
         inline=False
     )
 
     embed.add_field(
-        name="Outsider",
+        name=character_emojis.get("outsider", "") + "Outsider",
         value=f"Games: {outsider_games}, Wins: {outsider_wins}",
         inline=False
     )
 
     embed.add_field(
-        name="Traveller",
+        name=character_emojis.get("traveller", "") + "Traveller",
         value=f"Games: {traveller_games}, Wins: {traveller_wins}",
         inline=False
     )
 
     embed.add_field(
-        name="Minion",
+        name=character_emojis.get("minion", "") + "Minion",
         value=f"Games: {minion_games}, Wins: {minion_wins}",
         inline=False
     )
 
     embed.add_field(
-        name="Demon",
+        name=character_emojis.get("demon", "") + "Demon",
         value=f"Games: {demon_games}, Wins: {demon_wins}",
         inline=False
     )
