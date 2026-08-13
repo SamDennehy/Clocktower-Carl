@@ -525,7 +525,8 @@ class InputGoodType(discord.ui.View):
                 label="Outsider"
             ),
             discord.SelectOption(
-                label="Traveller"
+                label="Traveller",
+                value="Traveller_Good"
             ),
         ]
     )
@@ -566,7 +567,8 @@ class InputEvilType(discord.ui.View):
                 label="Demon"
             ),
             discord.SelectOption(
-                label="Traveller"
+                label="Traveller",
+                value="Traveller_Evil"
             ),
         ]
     )
