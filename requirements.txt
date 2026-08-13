@@ -2,3 +2,4 @@ discord.py==2.7.1
 Flask==3.0.3
 gunicorn==21.2.0
 python-dotenv==1.2.2
+pyscopg[binary]==3.1.0

@@ -6,14 +6,16 @@ from discord.ext import commands
 from random import sample
 from dotenv import load_dotenv
 from flask import Flask
-import sqlite3
+import psycopg
 
-connection = sqlite3.connect("/data/carl_stats.db")
+load_dotenv()
+
+connection = psycopg.connect(os.getenv("DATABASE_URL"))
 cursor = connection.cursor()
 
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS player_stats (
-        discord_id INTEGER PRIMARY KEY,
+        discord_id BIGINT PRIMARY KEY,
 
         townsfolk_games INTEGER DEFAULT 0,
         townsfolk_wins INTEGER DEFAULT 0,
@@ -38,7 +40,7 @@ def player_exists(discord_id):
     cursor.execute("""
         SELECT 1
         FROM player_stats
-        WHERE discord_id = ?
+        WHERE discord_id = %s
     """, (discord_id,))
 
     return cursor.fetchone() is not None
@@ -46,7 +48,7 @@ def player_exists(discord_id):
 def create_player(discord_id):
     cursor.execute("""
         INSERT INTO player_stats (discord_id)
-        VALUES (?)
+        VALUES (%s)
     """, (discord_id,))
 
     connection.commit()
@@ -62,22 +64,23 @@ def record_game_result(discord_id, alignment, character_type, result):
             UPDATE player_stats
             SET {column_prefix}games = {column_prefix}games + 1,
                 {column_prefix}wins = {column_prefix}wins + 1
-            WHERE discord_id = ?
+            WHERE discord_id = %s
         """, (discord_id,))
     else:
         cursor.execute(f"""
             UPDATE player_stats
             SET {column_prefix}games = {column_prefix}games + 1
-            WHERE discord_id = ?
+            WHERE discord_id = %s
         """, (discord_id,))
 
     connection.commit()
+    print(f"Recorded game result for Discord ID {discord_id}: {alignment} {character_type} - {result}")
 
 def get_player_stats(discord_id):
     cursor.execute("""
         SELECT *
         FROM player_stats
-        WHERE discord_id = ?
+        WHERE discord_id = %s
     """, (discord_id,))
 
     player_stats = cursor.fetchone()
