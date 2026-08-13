@@ -2,4 +2,4 @@ discord.py
 Flask
 gunicorn
 python-dotenv
-pyscopg[binary]
+psycopg[binary]
