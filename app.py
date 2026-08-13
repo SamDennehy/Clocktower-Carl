@@ -23,8 +23,11 @@ cursor.execute("""
         outsider_games INTEGER DEFAULT 0,
         outsider_wins INTEGER DEFAULT 0,
 
-        traveller_games INTEGER DEFAULT 0,
-        traveller_wins INTEGER DEFAULT 0,
+        traveller_good_games INTEGER DEFAULT 0,
+        traveller_good_wins INTEGER DEFAULT 0,
+
+        traveller_evil_games INTEGER DEFAULT 0,
+        traveller_evil_wins INTEGER DEFAULT 0,
 
         minion_games INTEGER DEFAULT 0,
         minion_wins INTEGER DEFAULT 0,
@@ -703,21 +706,24 @@ async def display_stats(interaction: discord.Interaction):
     outsider_games = stats[3]
     outsider_wins = stats[4]
 
-    traveller_games = stats[5]
-    traveller_wins = stats[6]
+    traveller_good_games = stats[5]
+    traveller_good_wins = stats[6]
 
-    minion_games = stats[7]
-    minion_wins = stats[8]
+    traveller_evil_games = stats[7]
+    traveller_evil_wins = stats[8]
 
-    demon_games = stats[9]
-    demon_wins = stats[10]
+    minion_games = stats[9]
+    minion_wins = stats[10]
+
+    demon_games = stats[11]
+    demon_wins = stats[12]
 
     # Alignment totals
-    good_games = townsfolk_games + outsider_games + traveller_games
-    good_wins = townsfolk_wins + outsider_wins + traveller_wins
+    good_games = townsfolk_games + outsider_games + traveller_good_games
+    good_wins = townsfolk_wins + outsider_wins + traveller_good_wins
 
-    evil_games = minion_games + demon_games
-    evil_wins = minion_wins + demon_wins
+    evil_games = minion_games + demon_games + traveller_evil_games
+    evil_wins = minion_wins + demon_wins + traveller_evil_wins
 
     # Overall totals
     overall_games = good_games + evil_games
@@ -758,8 +764,14 @@ async def display_stats(interaction: discord.Interaction):
     )
 
     embed.add_field(
-        name=character_emojis.get("traveller", "") + "Traveller",
-        value=f"Games: {traveller_games}, Wins: {traveller_wins}",
+        name=character_emojis.get("traveller", "") + "Traveller (Good)",
+        value=f"Games: {traveller_good_games}, Wins: {traveller_good_wins}",
+        inline=False
+    )
+
+    embed.add_field(
+        name=character_emojis.get("traveller", "") + "Traveller (Evil)",
+        value=f"Games: {traveller_evil_games}, Wins: {traveller_evil_wins}",
         inline=False
     )
 
