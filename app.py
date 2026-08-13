@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from flask import Flask
 import sqlite3
 
-connection = sqlite3.connect("fred_stats.db")
+connection = sqlite3.connect("/data/carl_stats.db")
 cursor = connection.cursor()
 
 cursor.execute("""
@@ -34,32 +34,40 @@ cursor.execute("""
 
 connection.commit()
 
-def create_player(discord_id):
+def player_exists(discord_id):
     cursor.execute("""
-        UPDATE player_stats
-        SET townsfolk_games = townsfolk_games + 1,
-            townsfolk_wins = townsfolk_wins + 1
+        SELECT 1
+        FROM player_stats
         WHERE discord_id = ?
     """, (discord_id,))
 
+    return cursor.fetchone() is not None
+
+def create_player(discord_id):
+    cursor.execute("""
+        INSERT INTO player_stats (discord_id)
+        VALUES (?)
+    """, (discord_id,))
+
+    connection.commit()
+
 def record_game_result(discord_id, alignment, character_type, result):
+    if not player_exists(discord_id):
+        create_player(discord_id)
+
     column_prefix = f"{character_type.lower()}_"
-    alignment_prefix = f"{alignment.lower()}_"
 
     if result == "Win":
         cursor.execute(f"""
             UPDATE player_stats
             SET {column_prefix}games = {column_prefix}games + 1,
-                {column_prefix}wins = {column_prefix}wins + 1,
-                {alignment_prefix}games = {alignment_prefix}games + 1,
-                {alignment_prefix}wins = {alignment_prefix}wins + 1
+                {column_prefix}wins = {column_prefix}wins + 1
             WHERE discord_id = ?
         """, (discord_id,))
     else:
         cursor.execute(f"""
             UPDATE player_stats
-            SET {column_prefix}games = {column_prefix}games + 1,
-                {alignment_prefix}games = {alignment_prefix}games + 1
+            SET {column_prefix}games = {column_prefix}games + 1
             WHERE discord_id = ?
         """, (discord_id,))
 
@@ -71,7 +79,10 @@ def get_player_stats(discord_id):
         FROM player_stats
         WHERE discord_id = ?
     """, (discord_id,))
-    return cursor.fetchone()
+
+    player_stats = cursor.fetchone()
+    print(player_stats)
+    return player_stats
 
 townsfolk = ["steward",
   "knight",
@@ -259,7 +270,7 @@ synced = False
 
 @bot.event
 async def on_ready():
-    global character_emojis, synced
+    global character_emojis
 
     emojis = await bot.fetch_application_emojis()
 
@@ -268,13 +279,14 @@ async def on_ready():
         for emoji in emojis
     }
 
-    if not synced:
-        await bot.tree.sync()
-        synced = True
-        print("Slash commands synced.")
+    synced_commands = await bot.tree.sync()
 
     print(f"Logged in successfully as {bot.user.name}")
     print(f"Loaded {len(character_emojis)} application emojis")
+    print(f"Synced {len(synced_commands)} slash commands:")
+    
+    for command in synced_commands:
+        print(f" - /{command.name}")
 def build_download_script_and_preview(values):
     townsfolk_count = values[0]
     outsiders_count = values[1]
@@ -396,7 +408,7 @@ async def generate_script(
                     inline=False
                 )
 
-        embed.set_footer(text="Fred's Script Generator")
+        embed.set_footer(text="Carl's Script Generator")
 
         print(f"Generated script with values: {values}")
 
@@ -600,10 +612,63 @@ class InputResults(discord.ui.View):
             )
             return
 
-        choice = select.values[0]
+        result = select.values[0]
 
         await interaction.response.send_message(
-            f"You chose: {choice}",
+            f"You chose: {self.alignment} {self.character_type} with result: {result}. Is this correct?",
+            view=ConfirmInput(self.user, self.alignment, self.character_type, result),
+            ephemeral=True
+        )
+class ConfirmInput(discord.ui.View):
+    def __init__(self, user, alignment, character_type, result):
+        super().__init__()
+        self.user = user
+        self.alignment = alignment
+        self.character_type = character_type
+        self.result = result
+
+    @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green)
+    async def confirm_callback(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button
+    ):
+        if interaction.user != self.user:
+            await interaction.response.send_message(
+                "This button isn't for you.",
+                ephemeral=True
+            )
+            return
+
+        record_game_result(
+            interaction.user.id,
+            self.alignment,
+            self.character_type,
+            self.result
+        )
+
+
+
+        await interaction.response.send_message(
+            "Your game results have been recorded.",
+            ephemeral=True
+        )
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red)
+    async def cancel_callback(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button
+    ):
+        if interaction.user != self.user:
+            await interaction.response.send_message(
+                "This button isn't for you.",
+                ephemeral=True
+            )
+            return
+
+        await interaction.response.send_message(
+            "Your game results have not been recorded.",
             ephemeral=True
         )
 
@@ -612,6 +677,127 @@ async def log_stats(interaction: discord.Interaction):
     await interaction.response.send_message(
         "Choose an Alignment",
         view=InputAlignment(interaction.user),
+        ephemeral=True
+    )
+
+@bot.tree.command(name="display_stats")
+async def display_stats(interaction: discord.Interaction):
+    discord_id = interaction.user.id
+
+    if not player_exists(discord_id):
+        await interaction.response.send_message(
+            "You have no recorded stats.",
+            ephemeral=True
+        )
+        return
+
+    stats = get_player_stats(discord_id)
+
+    # Individual category stats
+    townsfolk_games = stats[1]
+    townsfolk_wins = stats[2]
+
+    outsider_games = stats[3]
+    outsider_wins = stats[4]
+
+    traveller_games = stats[5]
+    traveller_wins = stats[6]
+
+    minion_games = stats[7]
+    minion_wins = stats[8]
+
+    demon_games = stats[9]
+    demon_wins = stats[10]
+
+    # Alignment totals
+    good_games = townsfolk_games + outsider_games + traveller_games
+    good_wins = townsfolk_wins + outsider_wins + traveller_wins
+
+    evil_games = minion_games + demon_games
+    evil_wins = minion_wins + demon_wins
+
+    # Overall totals
+    overall_games = good_games + evil_games
+    overall_wins = good_wins + evil_wins
+
+    # Win rates
+    if good_games > 0:
+        good_win_rate = (good_wins / good_games) * 100
+    else:
+        good_win_rate = 0
+
+    if evil_games > 0:
+        evil_win_rate = (evil_wins / evil_games) * 100
+    else:
+        evil_win_rate = 0
+
+    if overall_games > 0:
+        overall_win_rate = (overall_wins / overall_games) * 100
+    else:
+        overall_win_rate = 0
+
+    # Create embed
+    embed = discord.Embed(
+        title=f"{interaction.user.name}'s Game Stats",
+        color=discord.Color.purple()
+    )
+
+    embed.add_field(
+        name="Townsfolk",
+        value=f"Games: {townsfolk_games}, Wins: {townsfolk_wins}",
+        inline=False
+    )
+
+    embed.add_field(
+        name="Outsider",
+        value=f"Games: {outsider_games}, Wins: {outsider_wins}",
+        inline=False
+    )
+
+    embed.add_field(
+        name="Traveller",
+        value=f"Games: {traveller_games}, Wins: {traveller_wins}",
+        inline=False
+    )
+
+    embed.add_field(
+        name="Minion",
+        value=f"Games: {minion_games}, Wins: {minion_wins}",
+        inline=False
+    )
+
+    embed.add_field(
+        name="Demon",
+        value=f"Games: {demon_games}, Wins: {demon_wins}",
+        inline=False
+    )
+
+    embed.add_field(
+        name="Overall Games Played",
+        value=str(overall_games),
+        inline=False
+    )
+
+    embed.add_field(
+        name="Good Win Rate",
+        value=f"{good_win_rate:.2f}%",
+        inline=False
+    )
+
+    embed.add_field(
+        name="Evil Win Rate",
+        value=f"{evil_win_rate:.2f}%",
+        inline=False
+    )
+
+    embed.add_field(
+        name="Overall Win Rate",
+        value=f"{overall_win_rate:.2f}%",
+        inline=False
+    )
+
+    await interaction.response.send_message(
+        embed=embed,
         ephemeral=True
     )
 
