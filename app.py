@@ -920,67 +920,67 @@ async def display_stats(interaction: discord.Interaction):
 
     embed.add_field(
         name=character_emojis.get("townsfolk", "") + "Townsfolk",
-        value=f"Games: {townsfolk_games}, Wins: {townsfolk_wins}, Win Rate: {townsfolk_win_rate:.2f}%",
+        value=f"Games: {townsfolk_games}, Wins: {townsfolk_wins},\n Win Rate: {townsfolk_win_rate:.2f}%",
         inline=True
     )
 
     embed.add_field(
         name=character_emojis.get("outsider", "") + "Outsider",
-        value=f"Games: {outsider_games}, Wins: {outsider_wins}, Win Rate: {outsider_win_rate:.2f}%",
+        value=f"Games: {outsider_games}, Wins: {outsider_wins},\n Win Rate: {outsider_win_rate:.2f}%",
         inline=True
     )
 
     embed.add_field(
         name=character_emojis.get("traveller_g", "") + "Traveller (Good)",
-        value=f"Games: {traveller_good_games}, Wins: {traveller_good_wins}, Win Rate: {traveller_good_win_rate:.2f}%",
+        value=f"Games: {traveller_good_games}, Wins: {traveller_good_wins},\n Win Rate: {traveller_good_win_rate:.2f}%",
         inline=True
     )
 
     embed.add_field(
         name=character_emojis.get("traveller_e", "") + "Traveller (Evil)",
-        value=f"Games: {traveller_evil_games}, Wins: {traveller_evil_wins}, Win Rate: {traveller_evil_win_rate:.2f}%",
+        value=f"Games: {traveller_evil_games}, Wins: {traveller_evil_wins},\n Win Rate: {traveller_evil_win_rate:.2f}%",
         inline=True
     )
 
     embed.add_field(
         name=character_emojis.get("minion", "") + "Minion",
-        value=f"Games: {minion_games}, Wins: {minion_wins}, Win Rate: {minion_win_rate:.2f}%",
+        value=f"Games: {minion_games}, Wins: {minion_wins},\n Win Rate: {minion_win_rate:.2f}%",
         inline=True
     )
 
     embed.add_field(
         name=character_emojis.get("demon", "") + "Demon",
-        value=f"Games: {demon_games}, Wins: {demon_wins}, Win Rate: {demon_win_rate:.2f}%",
+        value=f"Games: {demon_games}, Wins: {demon_wins},\n Win Rate: {demon_win_rate:.2f}%",
         inline=True
     )
 
     embed.add_field(
         name=character_emojis.get("trouble_brewing", "") + "Trouble Brewing",
-        value=f"Games: {trouble_brewing_games}, Wins: {trouble_brewing_wins}, Win Rate: {trouble_brewing_win_rate:.2f}%",
+        value=f"Games: {trouble_brewing_games}, Wins: {trouble_brewing_wins},\n Win Rate: {trouble_brewing_win_rate:.2f}%",
         inline=True
     )
 
     embed.add_field(
         name=character_emojis.get("bad_moon_rising", "") + "Bad Moon Rising",
-        value=f"Games: {bad_moon_rising_games}, Wins: {bad_moon_rising_wins}, Win Rate: {bad_moon_rising_win_rate:.2f}%",
+        value=f"Games: {bad_moon_rising_games}, Wins: {bad_moon_rising_wins},\n Win Rate: {bad_moon_rising_win_rate:.2f}%",
         inline=True
     )
 
     embed.add_field(
         name=character_emojis.get("sects_and_violets", "") + "Sects and Violets",
-        value=f"Games: {sects_and_violets_games}, Wins: {sects_and_violets_wins}, Win Rate: {sects_and_violets_win_rate:.2f}%",
+        value=f"Games: {sects_and_violets_games}, Wins: {sects_and_violets_wins},\n Win Rate: {sects_and_violets_win_rate:.2f}%",
         inline=True
     )
 
     embed.add_field(
         name=character_emojis.get("custom_script", "") + "Custom",
-        value=f"Games: {custom_games}, Wins: {custom_wins}, Win Rate: {custom_win_rate:.2f}%",
+        value=f"Games: {custom_games}, Wins: {custom_wins},\n Win Rate: {custom_win_rate:.2f}%",
         inline=True
     )
 
     embed.add_field(
         name=character_emojis.get("custom_script", "") + "Teenysville",
-        value=f"Games: {teenysville_games}, Wins: {teenysville_wins}, Win Rate: {teenysville_win_rate:.2f}%",
+        value=f"Games: {teenysville_games}, Wins: {teenysville_wins},\n Win Rate: {teenysville_win_rate:.2f}%",
         inline=True
     )
 
