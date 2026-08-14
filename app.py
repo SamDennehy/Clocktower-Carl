@@ -567,7 +567,7 @@ class InputGoodType(discord.ui.View):
 
         await interaction.response.send_message(
             "Input your game results:",
-            view=InputResults(self.user, self.alignment, choice),
+            view=InputScript(self.user, self.alignment, choice),
             ephemeral=True
         )  
 class InputEvilType(discord.ui.View):
@@ -609,7 +609,7 @@ class InputEvilType(discord.ui.View):
 
         await interaction.response.send_message(
             "Input your game results:",
-            view=InputResults(self.user, self.alignment, choice),
+            view=InputScript(self.user, self.alignment, choice),
             ephemeral=True
         )      
 class InputScript(discord.ui.View):
