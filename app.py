@@ -13,7 +13,8 @@ load_dotenv()
 pool = ConnectionPool(
     os.getenv("DATABASE_URL"),
     min_size=1,
-    max_size=5
+    max_size=5,
+    max_lifetime=300  # 5 minutes
 )
 
 with pool.connection() as connection:
