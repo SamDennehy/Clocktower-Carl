@@ -1072,7 +1072,7 @@ def get_win_leaderboard():
                         townsfolk_games + outsider_games + traveller_good_games +
                         traveller_evil_games + minion_games + demon_games,
                         0
-                    ) DESC
+                    ) DESC NULLS LAST
                 LIMIT 10
             """)
 
@@ -1093,7 +1093,7 @@ def get_good_leaderboard():
                     NULLIF(
                         townsfolk_games + outsider_games + traveller_good_games,
                         0
-                    ) DESC
+                    ) DESC NULLS LAST
                 LIMIT 10
             """)
 
@@ -1114,7 +1114,7 @@ def get_evil_leaderboard():
                     NULLIF(
                         traveller_evil_games + minion_games + demon_games,
                         0
-                    ) DESC
+                    ) DESC NULLS LAST
                 LIMIT 10
             """)
 
