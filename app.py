@@ -902,19 +902,19 @@ async def display_stats(interaction: discord.Interaction):
 
     embed.add_field(
         name=character_emojis.get("custom", "") + "All Games",
-        value=f"Games: {overall_games}, Wins: {overall_wins}, Win Rate: {overall_win_rate:.2f}%",
+        value=f"Games: {overall_games}, Wins: {overall_wins},\n Win Rate: {overall_win_rate:.2f}%",
         inline=True
     )
 
     embed.add_field(
         name=character_emojis.get("good", "") + "Good Games",
-        value=f"Games: {good_games}, Wins: {good_wins}, Win Rate: {good_win_rate:.2f}%",
+        value=f"Games: {good_games}, Wins: {good_wins},\n Win Rate: {good_win_rate:.2f}%",
         inline=True
     )
 
     embed.add_field(
         name=character_emojis.get("evil", "") + "Evil Games",
-        value=f"Games: {evil_games}, Wins: {evil_wins}, Win Rate: {evil_win_rate:.2f}%",
+        value=f"Games: {evil_games}, Wins: {evil_wins},\n Win Rate: {evil_win_rate:.2f}%",
         inline=True
     )
 
