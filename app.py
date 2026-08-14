@@ -1011,6 +1011,212 @@ async def display_stats(interaction: discord.Interaction):
         ephemeral=False
     )
 
+async def create_leaderboard_embed(interaction, top_players, title):
+    embed = discord.Embed(
+        title=f"🏆 Leaderboard - {title}",
+        color=discord.Color.gold()
+    )
+
+    leaderboard = ""
+
+    for position, player in enumerate(top_players, start=1):
+        try:
+            user = await bot.fetch_user(player[0])
+            name = user.display_name
+        except discord.NotFound:
+            name = "Unknown User"
+
+        if player[2] > 0:
+            win_rate = player[1] / player[2] * 100
+        else:
+            win_rate = 0
+
+        if position == 1:
+            rank = "🥇"
+        elif position == 2:
+            rank = "🥈"
+        elif position == 3:
+            rank = "🥉"
+        else:
+            rank = f"**{position}.**"
+
+        leaderboard += (
+            f"{rank} **{name}** - "
+            f"{win_rate:.2f}% "
+            f"({player[1]}/{player[2]})\n"
+        )
+
+    embed.add_field(
+        name="Top Players",
+        value=leaderboard,
+        inline=False
+    )
+
+    return embed
+def get_win_leaderboard():
+    with pool.connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT
+                    discord_id,
+                    townsfolk_wins + outsider_wins + traveller_good_wins +
+                    minion_wins + demon_wins + traveller_evil_wins AS total_wins,
+                    townsfolk_games + outsider_games + traveller_good_games +
+                    traveller_evil_games + minion_games + demon_games AS total_games
+                FROM player_stats
+                ORDER BY
+                    (townsfolk_wins + outsider_wins + traveller_good_wins +
+                    minion_wins + demon_wins + traveller_evil_wins)::float
+                    /
+                    NULLIF(
+                        townsfolk_games + outsider_games + traveller_good_games +
+                        traveller_evil_games + minion_games + demon_games,
+                        0
+                    ) DESC
+                LIMIT 10
+            """)
+
+            top_players = cursor.fetchall()
+            return top_players
+def get_good_leaderboard():
+    with pool.connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT
+                    discord_id,
+                    townsfolk_wins + outsider_wins + traveller_good_wins AS total_wins,
+                    townsfolk_games + outsider_games + traveller_good_games AS total_games
+                FROM player_stats
+                ORDER BY
+                    (townsfolk_wins + outsider_wins + traveller_good_wins)::float
+                    /
+                    NULLIF(
+                        townsfolk_games + outsider_games + traveller_good_games,
+                        0
+                    ) DESC
+                LIMIT 10
+            """)
+
+            top_players = cursor.fetchall()
+            return top_players
+def get_evil_leaderboard():
+    with pool.connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT
+                    discord_id,
+                    minion_wins + demon_wins + traveller_evil_wins AS total_wins,
+                    traveller_evil_games + minion_games + demon_games AS total_games
+                FROM player_stats
+                ORDER BY
+                    (minion_wins + demon_wins + traveller_evil_wins)::float
+                    /
+                    NULLIF(
+                        traveller_evil_games + minion_games + demon_games,
+                        0
+                    ) DESC
+                LIMIT 10
+            """)
+
+            top_players = cursor.fetchall()
+            return top_players
+
+class LeaderboardView(discord.ui.View):
+    def __init__(self, user):
+        super().__init__(timeout=300)
+        self.user = user
+
+    @discord.ui.select(
+        placeholder="Choose a leaderboard",
+        min_values=1,
+        max_values=1,
+        options=[
+            discord.SelectOption(
+                label="Overall",
+                value="overall",
+                description="All Games"
+            ),
+            discord.SelectOption(
+                label="Good",
+                value="good",
+                description="Good Games"
+            ),
+            discord.SelectOption(
+                label="Evil",
+                value="evil",
+                description="Evil Games"
+            )
+        ]
+    )
+    async def select_callback(
+        self,
+        interaction: discord.Interaction,
+        select: discord.ui.Select
+    ):
+        if interaction.user != self.user:
+            await interaction.response.send_message(
+                "This leaderboard isn't for you.",
+                ephemeral=True
+            )
+            return
+
+        choice = select.values[0]
+
+        if choice == "overall":
+            top_players = get_win_leaderboard()
+            title = "Top 10 Players by Overall Win Rate"
+
+        elif choice == "good":
+            top_players = get_good_leaderboard()
+            title = "Top 10 Players by Good Win Rate"
+
+        elif choice == "evil":
+            top_players = get_evil_leaderboard()
+            title = "Top 10 Players by Evil Win Rate"
+
+        if not top_players:
+            await interaction.response.edit_message(
+                content="No players have recorded enough games for this leaderboard.",
+                embed=None,
+                view=self
+            )
+            return
+
+        embed = await create_leaderboard_embed(
+            interaction,
+            top_players,
+            title
+        )
+
+        await interaction.response.edit_message(
+            embed=embed,
+            view=self
+        )
+
+@bot.tree.command(name="leaderboard")
+async def leaderboard(interaction: discord.Interaction):
+
+    top_players = get_win_leaderboard()
+
+    if not top_players:
+        await interaction.response.send_message(
+            "No players have recorded enough games for the leaderboard.",
+            ephemeral=True
+        )
+        return
+
+    embed = await create_leaderboard_embed(
+        interaction,
+        top_players,
+        "Top 10 Players by Overall Win Rate"
+    )
+
+    await interaction.response.send_message(
+        embed=embed,
+        view=LeaderboardView(interaction.user),
+        ephemeral=False
+    )
+
 # Step 5: Start the bot
 def run_bot():
     TOKEN = os.getenv("DISCORD_TOKEN")
