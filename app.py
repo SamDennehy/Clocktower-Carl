@@ -33,7 +33,22 @@ cursor.execute("""
         minion_wins INTEGER DEFAULT 0,
 
         demon_games INTEGER DEFAULT 0,
-        demon_wins INTEGER DEFAULT 0
+        demon_wins INTEGER DEFAULT 0,
+
+        trouble_brewing_games INTEGER DEFAULT 0,
+        trouble_brewing_wins INTEGER DEFAULT 0,
+
+        bad_moon_rising_games INTEGER DEFAULT 0,
+        bad_moon_rising_wins INTEGER DEFAULT 0,
+
+        sects_and_violets_games INTEGER DEFAULT 0,
+        sects_and_violets_wins INTEGER DEFAULT 0,
+
+        teenysville_games INTEGER DEFAULT 0,
+        teenysville_wins INTEGER DEFAULT 0,
+
+        custom_games INTEGER DEFAULT 0,
+        custom_wins INTEGER DEFAULT 0
     )
 """)
 
@@ -56,23 +71,28 @@ def create_player(discord_id):
 
     connection.commit()
 
-def record_game_result(discord_id, alignment, character_type, result):
+def record_game_result(discord_id, alignment, character_type, script, result):
     if not player_exists(discord_id):
         create_player(discord_id)
 
-    column_prefix = f"{character_type.lower()}_"
+    character_type_prefix = f"{character_type.lower()}_"
+    script_prefix = f"{script.lower().replace(' ', '_')}_"
 
     if result == "Win":
         cursor.execute(f"""
             UPDATE player_stats
-            SET {column_prefix}games = {column_prefix}games + 1,
-                {column_prefix}wins = {column_prefix}wins + 1
+            SET {character_type_prefix}games = {character_type_prefix}games + 1,
+                {character_type_prefix}wins = {character_type_prefix}wins + 1,
+                {script_prefix}games = {script_prefix}games + 1,
+                {script_prefix}wins = {script_prefix}wins + 1
             WHERE discord_id = %s
         """, (discord_id,))
     else:
         cursor.execute(f"""
             UPDATE player_stats
-            SET {column_prefix}games = {column_prefix}games + 1
+            SET {character_type_prefix}games = {character_type_prefix}games + 1,
+                {script_prefix}games = {script_prefix}games + 1
+
             WHERE discord_id = %s
         """, (discord_id,))
 
@@ -592,12 +612,66 @@ class InputEvilType(discord.ui.View):
             view=InputResults(self.user, self.alignment, choice),
             ephemeral=True
         )      
-class InputResults(discord.ui.View):
+class InputScript(discord.ui.View):
     def __init__(self, user, alignment, character_type):
         super().__init__()
         self.user = user
         self.alignment = alignment
         self.character_type = character_type
+    @discord.ui.select(
+        placeholder="Choose a character type",
+        min_values=1,
+        max_values=1,
+        options=[
+            discord.SelectOption(
+                label="Trouble Brewing",
+                value="trouble_brewing"
+            ),
+            discord.SelectOption(
+                label="Bad Moon Rising",
+                value="bad_moon_rising"
+            ),
+            discord.SelectOption(
+                label="Sects & Violets",
+                value="sects_and_violets"
+            ),
+            discord.SelectOption(
+                label="Teenysville",
+                value="teenysville"
+            ),
+            discord.SelectOption(
+                label="Custom Script",
+                value="custom"
+            ),
+        ]
+    )
+    async def select_callback(
+        self,
+        interaction: discord.Interaction,
+        select: discord.ui.Select
+    ):
+        # Check who clicked the menu FIRST
+        if interaction.user != self.user:
+            await interaction.response.send_message(
+                "This menu isn't for you fuckhead.",
+                ephemeral=True
+            )
+            return
+        
+        choice = select.values[0]
+
+        await interaction.response.send_message(
+            "Input your game results:",
+            view=InputResults(self.user, self.alignment, self.character_type, choice),
+            ephemeral=True
+        )
+class InputResults(discord.ui.View):
+    def __init__(self, user, alignment, character_type, script):
+        super().__init__()
+        self.user = user
+        self.alignment = alignment
+        self.character_type = character_type
+        self.script = script
 
     @discord.ui.select(
         placeholder="Input your game results",
@@ -623,16 +697,17 @@ class InputResults(discord.ui.View):
         result = select.values[0]
 
         await interaction.response.send_message(
-            f"You chose: {self.alignment} {self.character_type} with result: {result}. Is this correct?",
-            view=ConfirmInput(self.user, self.alignment, self.character_type, result),
+            f"You chose: {self.alignment} {self.character_type} played on: {self.script}, with result: {result}. Is this correct?",
+            view=ConfirmInput(self.user, self.alignment, self.character_type, self.script, result),
             ephemeral=True
-        )
+        )  
 class ConfirmInput(discord.ui.View):
-    def __init__(self, user, alignment, character_type, result):
+    def __init__(self, user, alignment, character_type, script, result):
         super().__init__()
         self.user = user
         self.alignment = alignment
         self.character_type = character_type
+        self.script = script
         self.result = result
 
     @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green)
@@ -652,6 +727,7 @@ class ConfirmInput(discord.ui.View):
             interaction.user.id,
             self.alignment,
             self.character_type,
+            self.script,
             self.result
         )
 
@@ -720,6 +796,21 @@ async def display_stats(interaction: discord.Interaction):
     demon_games = stats[11]
     demon_wins = stats[12]
 
+    trouble_brewing_games = stats[13]
+    trouble_brewing_wins = stats[14]
+
+    bad_moon_rising_games = stats[15]
+    bad_moon_rising_wins = stats[16]
+
+    sects_and_violets_games = stats[17]
+    sects_and_violets_wins = stats[18]
+
+    teenysville_games = stats[19]
+    teenysville_wins = stats[20]
+
+    custom_games = stats[21]
+    custom_wins = stats[22]
+
     # Alignment totals
     good_games = townsfolk_games + outsider_games + traveller_good_games
     good_wins = townsfolk_wins + outsider_wins + traveller_good_wins
@@ -747,6 +838,62 @@ async def display_stats(interaction: discord.Interaction):
     else:
         overall_win_rate = 0
 
+    if townsfolk_games > 0:
+        townsfolk_win_rate = (townsfolk_wins / townsfolk_games) * 100
+    else:
+        townsfolk_win_rate = 0
+
+    if outsider_games > 0:
+        outsider_win_rate = (outsider_wins / outsider_games) * 100
+    else:
+        outsider_win_rate = 0
+
+    if traveller_good_games > 0:
+        traveller_good_win_rate = (traveller_good_wins / traveller_good_games) * 100
+    else:
+        traveller_good_win_rate = 0
+
+    if traveller_evil_games > 0:
+        traveller_evil_win_rate = (traveller_evil_wins / traveller_evil_games) * 100
+    else:
+        traveller_evil_win_rate = 0
+
+    if minion_games > 0:
+        minion_win_rate = (minion_wins / minion_games) * 100
+    else:
+        minion_win_rate = 0
+
+    if demon_games > 0:
+        demon_win_rate = (demon_wins / demon_games) * 100
+    else:
+        demon_win_rate = 0
+
+    if trouble_brewing_games > 0:
+        trouble_brewing_win_rate = (trouble_brewing_wins / trouble_brewing_games) * 100
+    else:
+        trouble_brewing_win_rate = 0
+
+    if bad_moon_rising_games > 0:
+        bad_moon_rising_win_rate = (bad_moon_rising_wins / bad_moon_rising_games) * 100
+    else:
+        bad_moon_rising_win_rate = 0
+
+    if sects_and_violets_games > 0:
+        sects_and_violets_win_rate = (sects_and_violets_wins / sects_and_violets_games) * 100
+    else:
+        sects_and_violets_win_rate = 0
+
+    if teenysville_games > 0:
+        teenysville_win_rate = (teenysville_wins / teenysville_games) * 100
+    else:
+        teenysville_win_rate = 0
+
+    if custom_games > 0:
+        custom_win_rate = (custom_wins / custom_games) * 100
+
+    else:
+        custom_win_rate = 0
+
     # Create embed
     embed = discord.Embed(
         title=f"{interaction.user.name}'s Game Stats",
@@ -754,63 +901,87 @@ async def display_stats(interaction: discord.Interaction):
     )
 
     embed.add_field(
+        name=character_emojis.get("custom", "") + "All Games",
+        value=f"Games: {overall_games}, Wins: {overall_wins}, Win Rate: {overall_win_rate:.2f}%",
+        inline=True
+    )
+
+    embed.add_field(
+        name=character_emojis.get("good", "") + "Good Games",
+        value=f"Games: {good_games}, Wins: {good_wins}, Win Rate: {good_win_rate:.2f}%",
+        inline=True
+    )
+
+    embed.add_field(
+        name=character_emojis.get("evil", "") + "Evil Games",
+        value=f"Games: {evil_games}, Wins: {evil_wins}, Win Rate: {evil_win_rate:.2f}%",
+        inline=True
+    )
+
+    embed.add_field(
         name=character_emojis.get("townsfolk", "") + "Townsfolk",
-        value=f"Games: {townsfolk_games}, Wins: {townsfolk_wins}",
-        inline=False
+        value=f"Games: {townsfolk_games}, Wins: {townsfolk_wins}, Win Rate: {townsfolk_win_rate:.2f}%",
+        inline=True
     )
 
     embed.add_field(
         name=character_emojis.get("outsider", "") + "Outsider",
-        value=f"Games: {outsider_games}, Wins: {outsider_wins}",
-        inline=False
+        value=f"Games: {outsider_games}, Wins: {outsider_wins}, Win Rate: {outsider_win_rate:.2f}%",
+        inline=True
     )
 
     embed.add_field(
-        name=character_emojis.get("traveller", "") + "Traveller (Good)",
-        value=f"Games: {traveller_good_games}, Wins: {traveller_good_wins}",
-        inline=False
+        name=character_emojis.get("traveller_g", "") + "Traveller (Good)",
+        value=f"Games: {traveller_good_games}, Wins: {traveller_good_wins}, Win Rate: {traveller_good_win_rate:.2f}%",
+        inline=True
     )
 
     embed.add_field(
-        name=character_emojis.get("traveller", "") + "Traveller (Evil)",
-        value=f"Games: {traveller_evil_games}, Wins: {traveller_evil_wins}",
-        inline=False
+        name=character_emojis.get("traveller_e", "") + "Traveller (Evil)",
+        value=f"Games: {traveller_evil_games}, Wins: {traveller_evil_wins}, Win Rate: {traveller_evil_win_rate:.2f}%",
+        inline=True
     )
 
     embed.add_field(
         name=character_emojis.get("minion", "") + "Minion",
-        value=f"Games: {minion_games}, Wins: {minion_wins}",
-        inline=False
+        value=f"Games: {minion_games}, Wins: {minion_wins}, Win Rate: {minion_win_rate:.2f}%",
+        inline=True
     )
 
     embed.add_field(
         name=character_emojis.get("demon", "") + "Demon",
-        value=f"Games: {demon_games}, Wins: {demon_wins}",
-        inline=False
+        value=f"Games: {demon_games}, Wins: {demon_wins}, Win Rate: {demon_win_rate:.2f}%",
+        inline=True
     )
 
     embed.add_field(
-        name="Overall Games Played",
-        value=str(overall_games),
-        inline=False
+        name=character_emojis.get("trouble_brewing", "") + "Trouble Brewing",
+        value=f"Games: {trouble_brewing_games}, Wins: {trouble_brewing_wins}, Win Rate: {trouble_brewing_win_rate:.2f}%",
+        inline=True
     )
 
     embed.add_field(
-        name="Good Win Rate",
-        value=f"{good_win_rate:.2f}%",
-        inline=False
+        name=character_emojis.get("bad_moon_rising", "") + "Bad Moon Rising",
+        value=f"Games: {bad_moon_rising_games}, Wins: {bad_moon_rising_wins}, Win Rate: {bad_moon_rising_win_rate:.2f}%",
+        inline=True
     )
 
     embed.add_field(
-        name="Evil Win Rate",
-        value=f"{evil_win_rate:.2f}%",
-        inline=False
+        name=character_emojis.get("sects_and_violets", "") + "Sects and Violets",
+        value=f"Games: {sects_and_violets_games}, Wins: {sects_and_violets_wins}, Win Rate: {sects_and_violets_win_rate:.2f}%",
+        inline=True
     )
 
     embed.add_field(
-        name="Overall Win Rate",
-        value=f"{overall_win_rate:.2f}%",
-        inline=False
+        name=character_emojis.get("custom_script", "") + "Custom",
+        value=f"Games: {custom_games}, Wins: {custom_wins}, Win Rate: {custom_win_rate:.2f}%",
+        inline=True
+    )
+
+    embed.add_field(
+        name=character_emojis.get("custom_script", "") + "Teenysville",
+        value=f"Games: {teenysville_games}, Wins: {teenysville_wins}, Win Rate: {teenysville_win_rate:.2f}%",
+        inline=True
     )
 
     await interaction.response.send_message(
