@@ -3,3 +3,4 @@ Flask
 gunicorn
 python-dotenv
 psycopg[binary]
+psycopg_pool

@@ -6,109 +6,130 @@ from discord.ext import commands
 from random import sample
 from dotenv import load_dotenv
 from flask import Flask
-import psycopg
+from psycopg_pool import ConnectionPool
 
 load_dotenv()
 
-connection = psycopg.connect(os.getenv("DATABASE_URL"))
-cursor = connection.cursor()
+pool = ConnectionPool(
+    os.getenv("DATABASE_URL"),
+    min_size=1,
+    max_size=5
+)
 
-cursor.execute("""
-    CREATE TABLE IF NOT EXISTS player_stats (
-        discord_id BIGINT PRIMARY KEY,
+with pool.connection() as connection:
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS player_stats (
+                discord_id BIGINT PRIMARY KEY,
 
-        townsfolk_games INTEGER DEFAULT 0,
-        townsfolk_wins INTEGER DEFAULT 0,
+                townsfolk_games INTEGER DEFAULT 0,
+                townsfolk_wins INTEGER DEFAULT 0,
 
-        outsider_games INTEGER DEFAULT 0,
-        outsider_wins INTEGER DEFAULT 0,
+                outsider_games INTEGER DEFAULT 0,
+                outsider_wins INTEGER DEFAULT 0,
 
-        traveller_good_games INTEGER DEFAULT 0,
-        traveller_good_wins INTEGER DEFAULT 0,
+                traveller_good_games INTEGER DEFAULT 0,
+                traveller_good_wins INTEGER DEFAULT 0,
 
-        traveller_evil_games INTEGER DEFAULT 0,
-        traveller_evil_wins INTEGER DEFAULT 0,
+                traveller_evil_games INTEGER DEFAULT 0,
+                traveller_evil_wins INTEGER DEFAULT 0,
 
-        minion_games INTEGER DEFAULT 0,
-        minion_wins INTEGER DEFAULT 0,
+                minion_games INTEGER DEFAULT 0,
+                minion_wins INTEGER DEFAULT 0,
 
-        demon_games INTEGER DEFAULT 0,
-        demon_wins INTEGER DEFAULT 0,
+                demon_games INTEGER DEFAULT 0,
+                demon_wins INTEGER DEFAULT 0,
 
-        trouble_brewing_games INTEGER DEFAULT 0,
-        trouble_brewing_wins INTEGER DEFAULT 0,
+                trouble_brewing_games INTEGER DEFAULT 0,
+                trouble_brewing_wins INTEGER DEFAULT 0,
 
-        bad_moon_rising_games INTEGER DEFAULT 0,
-        bad_moon_rising_wins INTEGER DEFAULT 0,
+                bad_moon_rising_games INTEGER DEFAULT 0,
+                bad_moon_rising_wins INTEGER DEFAULT 0,
 
-        sects_and_violets_games INTEGER DEFAULT 0,
-        sects_and_violets_wins INTEGER DEFAULT 0,
+                sects_and_violets_games INTEGER DEFAULT 0,
+                sects_and_violets_wins INTEGER DEFAULT 0,
 
-        teenysville_games INTEGER DEFAULT 0,
-        teenysville_wins INTEGER DEFAULT 0,
+                teenysville_games INTEGER DEFAULT 0,
+                teenysville_wins INTEGER DEFAULT 0,
 
-        custom_games INTEGER DEFAULT 0,
-        custom_wins INTEGER DEFAULT 0
-    )
-""")
+                custom_games INTEGER DEFAULT 0,
+                custom_wins INTEGER DEFAULT 0
+            )
+        """)
 
-connection.commit()
+        connection.commit()
 
 def player_exists(discord_id):
-    cursor.execute("""
-        SELECT 1
-        FROM player_stats
-        WHERE discord_id = %s
-    """, (discord_id,))
+    with pool.connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT 1
+                FROM player_stats
+                WHERE discord_id = %s
+            """, (discord_id,))
 
-    return cursor.fetchone() is not None
+            return cursor.fetchone() is not None
 
 def create_player(discord_id):
-    cursor.execute("""
-        INSERT INTO player_stats (discord_id)
-        VALUES (%s)
-    """, (discord_id,))
+    with pool.connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO player_stats (discord_id)
+                VALUES (%s)
+                ON CONFLICT (discord_id) DO NOTHING
+            """, (discord_id,))
 
-    connection.commit()
-
+            connection.commit()
 def record_game_result(discord_id, alignment, character_type, script, result):
-    if not player_exists(discord_id):
-        create_player(discord_id)
+    create_player(discord_id)
 
     character_type_prefix = f"{character_type.lower()}_"
     script_prefix = f"{script.lower().replace(' ', '_')}_"
 
-    if result == "Win":
-        cursor.execute(f"""
-            UPDATE player_stats
-            SET {character_type_prefix}games = {character_type_prefix}games + 1,
-                {character_type_prefix}wins = {character_type_prefix}wins + 1,
-                {script_prefix}games = {script_prefix}games + 1,
-                {script_prefix}wins = {script_prefix}wins + 1
-            WHERE discord_id = %s
-        """, (discord_id,))
-    else:
-        cursor.execute(f"""
-            UPDATE player_stats
-            SET {character_type_prefix}games = {character_type_prefix}games + 1,
-                {script_prefix}games = {script_prefix}games + 1
+    with pool.connection() as connection:
+        with connection.cursor() as cursor:
 
-            WHERE discord_id = %s
-        """, (discord_id,))
+            if result == "Win":
+                cursor.execute(f"""
+                    UPDATE player_stats
+                    SET {character_type_prefix}games =
+                            {character_type_prefix}games + 1,
+                        {character_type_prefix}wins =
+                            {character_type_prefix}wins + 1,
+                        {script_prefix}games =
+                            {script_prefix}games + 1,
+                        {script_prefix}wins =
+                            {script_prefix}wins + 1
+                    WHERE discord_id = %s
+                """, (discord_id,))
 
-    connection.commit()
-    print(f"Recorded game result for Discord ID {discord_id}: {alignment} {character_type} - {result}")
+            else:
+                cursor.execute(f"""
+                    UPDATE player_stats
+                    SET {character_type_prefix}games =
+                            {character_type_prefix}games + 1,
+                        {script_prefix}games =
+                            {script_prefix}games + 1
+                    WHERE discord_id = %s
+                """, (discord_id,))
+
+            connection.commit()
+
+    print(
+        f"Recorded game result for Discord ID {discord_id}: "
+        f"{alignment} {character_type} - {result}"
+    )
 
 def get_player_stats(discord_id):
-    cursor.execute("""
-        SELECT *
-        FROM player_stats
-        WHERE discord_id = %s
-    """, (discord_id,))
+    with pool.connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT *
+                FROM player_stats
+                WHERE discord_id = %s
+            """, (discord_id,))
 
-    player_stats = cursor.fetchone()
-    print(player_stats)
-    return player_stats
+            return cursor.fetchone()
 
 townsfolk = ["steward",
   "knight",
