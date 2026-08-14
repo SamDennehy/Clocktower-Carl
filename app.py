@@ -1174,6 +1174,9 @@ class LeaderboardView(discord.ui.View):
             top_players = get_evil_leaderboard()
             title = "Top 10 Players by Evil Win Rate"
 
+        print("CHOICE:", choice)
+        print("TOP PLAYERS:", top_players)
+
         if not top_players:
             await interaction.response.edit_message(
                 content="No players have recorded enough games for this leaderboard.",
