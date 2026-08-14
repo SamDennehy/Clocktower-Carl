@@ -588,7 +588,7 @@ class InputGoodType(discord.ui.View):
         choice = select.values[0]
 
         await interaction.response.send_message(
-            "Input your game results:",
+            "Input the script you played with:",
             view=InputScript(self.user, self.alignment, choice),
             ephemeral=True
         )  
@@ -630,7 +630,7 @@ class InputEvilType(discord.ui.View):
         choice = select.values[0]
 
         await interaction.response.send_message(
-            "Input your game results:",
+            "Input the script you played with:",
             view=InputScript(self.user, self.alignment, choice),
             ephemeral=True
         )      
