@@ -104,9 +104,9 @@ def record_game_result(discord_id, alignment, character_type, ragebait, script, 
                         {script_prefix}wins =
                             {script_prefix}wins + 1,
                         ragebait_games =
-                            ragebait_games + 1,
+                            ragebait_games + {ragebait},
                         ragebait_wins =
-                            ragebait_wins + 1
+                            ragebait_wins + {ragebait}
                     WHERE discord_id = %s
                 """, (discord_id,))
 
@@ -118,7 +118,7 @@ def record_game_result(discord_id, alignment, character_type, ragebait, script, 
                         {script_prefix}games =
                             {script_prefix}games + 1, 
                         ragebait_games =
-                            ragebait_games + 1
+                            ragebait_games + {ragebait}
                     WHERE discord_id = %s
                 """, (discord_id,))
 
@@ -821,8 +821,8 @@ class ConfirmInput(discord.ui.View):
             interaction.user.id,
             self.alignment,
             self.character_type,
-            self.script,
             self.ragebait,
+            self.script,
             self.result
         )
 

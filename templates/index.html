@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gamble on the Casinotower</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <main class="app-shell">
+        <section class="panel panel-left">
+            <h1>Gamble on the Casinotower</h1>
+            <h6>Created by Sam who is goated</h6>
+            <form action="/generate_script" method="post" class="controls">
+                <div class="quantity_selectors">
+                    <label for="townsfolk">Townsfolk:</label>
+                    <input type="number" id="townsfolk" name="townsfolk" min="6" max="13" value="13">
+
+                    <label for="outsiders">Outsiders:</label>
+                    <input type="number" id="outsiders" name="outsiders" min="2" max="6" value="4">
+
+                    <label for="minions">Minions:</label>
+                    <input type="number" id="minions" name="minions" min="2" max="6" value="4">
+
+                    <label for="demons">Demons:</label>
+                    <input type="number" id="demons" name="demons" min="1" max="4" value="1">
+
+                    <label for="npcs">NPCs:</label>
+                    <input type="number" id="npcs" name="npcs" min="0" max="22" value="0">
+
+                    <label for="storytellers">Storytellers:</label>
+                    <input type="text" id="storytellers" name="storytellers">
+                    <h6>(separate names by commas)</h6>
+                </div>
+
+                <div class="button-row">
+                    <button type="button" id="generate-script">Generate Script</button>
+                    <button type="button" id="download-script">Download Script</button>
+                </div>
+            </form>
+            <br>
+            <form action="/drunktower_bootleggers" method="get" class="controls">
+                <div class="button-row">
+                    <button type="button" id="get-drinktower-bootleggers">Generate Drunktower Bootlegger</button>
+                </div>
+                <div id="drunktower-bootleggers-container">
+
+                </div>
+            </form>
+        </section>
+
+        <section class="panel panel-right">
+            <h2>Script Preview</h2>
+            <div id="storyteller-container"></div>
+            <div id="script-container"></div>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+</body>
+</html>
