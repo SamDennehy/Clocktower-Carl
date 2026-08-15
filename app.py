@@ -2,7 +2,7 @@ import os
 import threading
 import discord
 import json
-from discord.ext import commands
+from discord.ext import commands, tasks
 from random import sample
 from dotenv import load_dotenv
 from flask import Flask
@@ -73,7 +73,6 @@ def player_exists(discord_id):
             """, (discord_id,))
 
             return cursor.fetchone() is not None
-
 def create_player(discord_id):
     with pool.connection() as connection:
         with connection.cursor() as cursor:
@@ -129,7 +128,6 @@ def record_game_result(discord_id, alignment, character_type, ragebait, script, 
         f"Recorded game result for Discord ID {discord_id}: "
         f"{alignment} {character_type} - {result} - {script_dict.get(script, script)} - Ragebait: {'Yes' if ragebait else 'No'}"
     )
-
 def get_player_stats(discord_id):
     with pool.connection() as connection:
         with connection.cursor() as cursor:
@@ -322,8 +320,6 @@ def run_web_server():
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
 
-load_dotenv()
-
 intents = discord.Intents.default()
 intents.message_content = True
 
@@ -332,6 +328,17 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 character_emojis = {}
 synced = False
 
+@tasks.loop(minutes=3)
+async def check_database():
+    try:
+        with pool.connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1")
+
+        print("Database connection OK")
+
+    except Exception as e:
+        print(f"Database connection check failed: {e}")
 
 @bot.event
 async def on_ready():
@@ -352,6 +359,10 @@ async def on_ready():
     
     for command in synced_commands:
         print(f" - /{command.name}")
+
+    if not check_database.is_running():
+        check_database.start()
+
 def build_download_script_and_preview(values):
     townsfolk_count = values[0]
     outsiders_count = values[1]
@@ -692,7 +703,6 @@ class InputRagebait(discord.ui.View):
             view=InputScript(self.user, self.alignment, self.character_type, choice),
             ephemeral=True
         )
-
 class InputScript(discord.ui.View):
     def __init__(self, user, alignment, character_type, ragebait):
         super().__init__()
