@@ -2,6 +2,7 @@ import os
 import threading
 import discord
 import json
+import asyncio
 from discord.ext import commands, tasks
 from random import sample
 from dotenv import load_dotenv
@@ -1285,6 +1286,15 @@ async def leaderboard(interaction: discord.Interaction):
         view=LeaderboardView(interaction.user),
         ephemeral=False
     )
+
+@bot.tree.command(name="timer", description="Set a timer in seconds to ping @here when it ends")
+async def timer(interaction: discord.Interaction, seconds: int):
+    await interaction.response.send_message(
+        f"Timer set for {seconds} seconds.",
+        ephemeral=True
+    )
+    await asyncio.sleep(seconds)
+    await interaction.channel.send("@here everyone return to townsquare, your timer has ended!")
 
 # Step 5: Start the bot
 def run_bot():
