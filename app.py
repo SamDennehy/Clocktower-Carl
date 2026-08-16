@@ -400,7 +400,7 @@ def build_download_script_and_preview(values):
 
     return [generated_script, preview_dict]
 
-@bot.tree.command(name="generate_script")
+@bot.tree.command(name="generate script")
 @discord.app_commands.describe(
     townsfolk_count="Number of Townsfolk",
     outsider_count="Number of Outsiders",
@@ -493,7 +493,7 @@ async def generate_script(
             file=discord_file
         )
 
-@bot.tree.command(name="choose_storyteller")
+@bot.tree.command(name="choose storyteller")
 @discord.app_commands.describe(
     num="Number of storytellers to choose",
     names="Names separated by commas"
@@ -851,7 +851,7 @@ class ConfirmInput(discord.ui.View):
             ephemeral=True
         )
 
-@bot.tree.command(name="log_stats")
+@bot.tree.command(name="log stats")
 async def log_stats(interaction: discord.Interaction):
     await interaction.response.send_message(
         "Choose an Alignment",
@@ -859,7 +859,7 @@ async def log_stats(interaction: discord.Interaction):
         ephemeral=True
     )
 
-@bot.tree.command(name="display_stats")
+@bot.tree.command(name="display stats")
 async def display_stats(interaction: discord.Interaction):
     discord_id = interaction.user.id
 
