@@ -416,36 +416,13 @@ async def generate_script(
     demon_count: int | None = None,
     npc_count: int | None = None
 ):
-    if all(value is None for value in [
-        townsfolk_count,
-        outsider_count,
-        minion_count,
-        demon_count,
-        npc_count
-    ]):
-        values = [13, 4, 4, 1, 0]
-
-    elif any(value is None for value in [
-        townsfolk_count,
-        outsider_count,
-        minion_count,
-        demon_count,
-        npc_count
-    ]):
-        await interaction.response.send_message(
-            "Please provide either 0 or all 5 values.",
-            ephemeral=True
-        )
-        return
-
-    else:
-        values = [
-            townsfolk_count,
-            outsider_count,
-            minion_count,
-            demon_count,
-            npc_count
-        ]
+    values = [
+    townsfolk_count if townsfolk_count is not None else 13,
+    outsider_count if outsider_count is not None else 4,
+    minion_count if minion_count is not None else 4,
+    demon_count if demon_count is not None else 1,
+    npc_count if npc_count is not None else 0
+    ] 
 
     script = build_download_script_and_preview(values)
 
@@ -493,7 +470,7 @@ async def generate_script(
             file=discord_file
         )
 
-@bot.tree.command(name="choose_storyteller")
+@bot.tree.command(name="choose_storyteller", description="Randomly choose a storyteller from a list of names (separate names by commas)")
 @discord.app_commands.describe(
     num="Number of storytellers to choose",
     names="Names separated by commas"
