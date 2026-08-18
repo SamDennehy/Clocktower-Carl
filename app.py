@@ -1318,7 +1318,7 @@ class JSONModal(discord.ui.Modal, title="Import BOTC JSON"):
 
         await interaction.response.send_message(
             "Select the script you played with:",
-            view=InputScript(None, None, None, None, True, discord_id_role_dict),
+            view=InputScript(self.user, None, None, None, True, discord_id_role_dict),
             ephemeral=True
         )
 class Player():
