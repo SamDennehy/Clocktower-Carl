@@ -61,7 +61,7 @@ with pool.connection() as connection:
                 total_wins INTEGER DEFAULT minion_wins + demon_wins + traveller_evil_wins + townsfolk_wins + outsider_wins + traveller_good_wins,
 
                 whale_buffet_games INTEGER DEFAULT 0,
-                whale_buffet_wins INTEGER DEFAULT 0,
+                whale_buffet_wins INTEGER DEFAULT 0
             )
         """)
 
