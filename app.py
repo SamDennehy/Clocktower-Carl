@@ -1091,6 +1091,7 @@ async def create_leaderboard_embed(interaction, top_players, title):
 
     return embed
 def get_win_leaderboard():
+    member_ids = [member.id for member in interaction.guild.members]
     with pool.connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -1101,7 +1102,8 @@ def get_win_leaderboard():
                     townsfolk_games + outsider_games + traveller_good_games +
                     traveller_evil_games + minion_games + demon_games AS total_games
                 FROM player_stats
-                WHERE townsfolk_games + outsider_games + traveller_good_games +
+                WHERE discord_id = ANY(%s)
+                AND townsfolk_games + outsider_games + traveller_good_games +
                       traveller_evil_games + minion_games + demon_games >= 5
                 ORDER BY
                     (townsfolk_wins + outsider_wins + traveller_good_wins +
@@ -1113,11 +1115,12 @@ def get_win_leaderboard():
                         0
                     ) DESC NULLS LAST
                 LIMIT 10
-            """)
+            """, member_ids)
 
             top_players = cursor.fetchall()
             return top_players
 def get_good_leaderboard():
+    member_ids = [member.id for member in interaction.guild.members]
     with pool.connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -1126,7 +1129,8 @@ def get_good_leaderboard():
                     townsfolk_wins + outsider_wins + traveller_good_wins AS total_wins,
                     townsfolk_games + outsider_games + traveller_good_games AS total_games
                 FROM player_stats
-                WHERE townsfolk_games + outsider_games + traveller_good_games >= 5
+                WHERE discord_id = ANY(%s)
+                AND townsfolk_games + outsider_games + traveller_good_games >= 5
                 ORDER BY
                     (townsfolk_wins + outsider_wins + traveller_good_wins)::float
                     /
@@ -1135,11 +1139,12 @@ def get_good_leaderboard():
                         0
                     ) DESC NULLS LAST
                 LIMIT 10
-            """)
+            """, member_ids)
 
             top_players = cursor.fetchall()
             return top_players
 def get_evil_leaderboard():
+    member_ids = [member.id for member in interaction.guild.members]
     with pool.connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -1148,7 +1153,8 @@ def get_evil_leaderboard():
                     minion_wins + demon_wins + traveller_evil_wins AS total_wins,
                     traveller_evil_games + minion_games + demon_games AS total_games
                 FROM player_stats
-                WHERE traveller_evil_games + minion_games + demon_games >= 5
+                WHERE discord_id = ANY(%s)
+                AND traveller_evil_games + minion_games + demon_games >= 5
                 ORDER BY
                     (minion_wins + demon_wins + traveller_evil_wins)::float
                     /
@@ -1157,7 +1163,7 @@ def get_evil_leaderboard():
                         0
                     ) DESC NULLS LAST
                 LIMIT 10
-            """)
+            """, member_ids)
 
             top_players = cursor.fetchall()
             return top_players
