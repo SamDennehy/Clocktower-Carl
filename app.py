@@ -1115,7 +1115,7 @@ def get_win_leaderboard(interaction):
                         0
                     ) DESC NULLS LAST
                 LIMIT 10
-            """, member_ids)
+            """, (member_ids,))
 
             top_players = cursor.fetchall()
             return top_players
@@ -1139,7 +1139,7 @@ def get_good_leaderboard(interaction):
                         0
                     ) DESC NULLS LAST
                 LIMIT 10
-            """, member_ids)
+            """, (member_ids,))
 
             top_players = cursor.fetchall()
             return top_players
@@ -1163,7 +1163,7 @@ def get_evil_leaderboard(interaction):
                         0
                     ) DESC NULLS LAST
                 LIMIT 10
-            """, member_ids)
+            """, (member_ids,))
 
             top_players = cursor.fetchall()
             return top_players
