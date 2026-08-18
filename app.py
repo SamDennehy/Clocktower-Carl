@@ -600,7 +600,7 @@ class InputGoodType(discord.ui.View):
         choice = select.values[0]
 
         await interaction.response.send_message(
-            "Did you ragebait anybody?",
+            "What script did you play with?",
             view=InputScript(self.user, self.alignment, choice, False, None),
             ephemeral=True
         )  
@@ -642,7 +642,7 @@ class InputEvilType(discord.ui.View):
         choice = select.values[0]
 
         await interaction.response.send_message(
-            "Did you ragebait anybody?",
+            "What script did you play with?",
             view=InputScript(self.user, self.alignment, choice, False, None),
             ephemeral=True
         )      
@@ -1090,7 +1090,7 @@ async def create_leaderboard_embed(interaction, top_players, title):
     )
 
     return embed
-def get_win_leaderboard():
+def get_win_leaderboard(interaction):
     member_ids = [member.id for member in interaction.guild.members]
     with pool.connection() as connection:
         with connection.cursor() as cursor:
@@ -1119,7 +1119,7 @@ def get_win_leaderboard():
 
             top_players = cursor.fetchall()
             return top_players
-def get_good_leaderboard():
+def get_good_leaderboard(interaction):
     member_ids = [member.id for member in interaction.guild.members]
     with pool.connection() as connection:
         with connection.cursor() as cursor:
@@ -1143,7 +1143,7 @@ def get_good_leaderboard():
 
             top_players = cursor.fetchall()
             return top_players
-def get_evil_leaderboard():
+def get_evil_leaderboard(interaction):
     member_ids = [member.id for member in interaction.guild.members]
     with pool.connection() as connection:
         with connection.cursor() as cursor:
@@ -1210,14 +1210,14 @@ class LeaderboardView(discord.ui.View):
         choice = select.values[0]
 
         if choice == "overall":
-            top_players = get_win_leaderboard()
+            top_players = get_win_leaderboard(interaction)
             title = "Top 10 Players by Overall Win Rate (minimum 5 games)"
 
         elif choice == "good":
-            top_players = get_good_leaderboard()
+            top_players = get_good_leaderboard(interaction)
             title = "Top 10 Players by Good Win Rate (minimum 5 games)"
         elif choice == "evil":
-            top_players = get_evil_leaderboard()
+            top_players = get_evil_leaderboard(interaction)
             title = "Top 10 Players by Evil Win Rate (minimum 5 games)"
 
         print("CHOICE:", choice)
@@ -1245,7 +1245,7 @@ class LeaderboardView(discord.ui.View):
 @bot.tree.command(name="leaderboard" , description="Display the top 10 players in the server by win rate")
 async def leaderboard(interaction: discord.Interaction):
 
-    top_players = get_win_leaderboard()
+    top_players = get_win_leaderboard(interaction)
 
     if not top_players:
         await interaction.response.send_message(
