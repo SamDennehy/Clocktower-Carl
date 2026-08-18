@@ -1091,7 +1091,7 @@ async def create_leaderboard_embed(interaction, top_players, title):
 
     return embed
 def get_win_leaderboard(interaction):
-    member_ids = [member.id for member in interaction.guild.members]
+    member_ids = [member.id for member in interaction.guild.members.fetch()]
     print("Guild:", interaction.guild.name)
     print("Guild ID:", interaction.guild.id)
     print("Member IDs:", member_ids)
@@ -1124,7 +1124,7 @@ def get_win_leaderboard(interaction):
             top_players = cursor.fetchall()
             return top_players
 def get_good_leaderboard(interaction):
-    member_ids = [member.id for member in interaction.guild.members]
+    member_ids = [member.id for member in interaction.guild.members.fetch()]
     print("Guild:", interaction.guild.name)
     print("Guild ID:", interaction.guild.id)
     print("Member IDs:", member_ids)
@@ -1152,7 +1152,7 @@ def get_good_leaderboard(interaction):
             top_players = cursor.fetchall()
             return top_players
 def get_evil_leaderboard(interaction):
-    member_ids = [member.id for member in interaction.guild.members]
+    member_ids = [member.id for member in interaction.guild.members.fetch()]
     print("Guild:", interaction.guild.name)
     print("Guild ID:", interaction.guild.id)
     print("Member IDs:", member_ids)
