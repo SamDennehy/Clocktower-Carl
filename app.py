@@ -1352,7 +1352,7 @@ class InputMassResults(discord.ui.View):
         self.script = script
 
     @discord.ui.select(
-        placeholder="Which allignment won?",
+        placeholder="Which alignment won?",
         min_values=1,
         max_values=1,
         options=[
@@ -1396,15 +1396,16 @@ class InputMassResults(discord.ui.View):
                 elif role in demons:
                     category = "demon"
                     alignment = "evil"
-        
-            player = Player(
-                discord_id=discord_id,
-                alignment=alignment,
-                character_type=category,
-                script=self.script,
-                result="Win" if alignment.lower() == winner.lower() else "Lose"
-            )
-            players.append(player)
+
+            if alignment:
+                player = Player(
+                    discord_id=discord_id,
+                    alignment=alignment,
+                    character_type=category,
+                    script=self.script,
+                    result="Win" if alignment.lower() == winner.lower() else "Lose"
+                )
+                players.append(player)
 
         confirm_string = ""
         for player in players:
