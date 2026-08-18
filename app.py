@@ -1386,7 +1386,7 @@ class InputMassResults(discord.ui.View):
                 alignment=alignment,
                 character_type=category,
                 script=self.script,
-                result="win" if alignment == winner.lower() else "lose"
+                result="Win" if alignment == winner.lower() else "Lose"
             )
             players.append(player)
 
