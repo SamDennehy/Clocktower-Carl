@@ -1092,6 +1092,10 @@ async def create_leaderboard_embed(interaction, top_players, title):
     return embed
 def get_win_leaderboard(interaction):
     member_ids = [member.id for member in interaction.guild.members]
+    print("Guild:", interaction.guild.name)
+    print("Guild ID:", interaction.guild.id)
+    print("Member IDs:", member_ids)
+    print("Your ID:", interaction.user.id)
     with pool.connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -1121,6 +1125,10 @@ def get_win_leaderboard(interaction):
             return top_players
 def get_good_leaderboard(interaction):
     member_ids = [member.id for member in interaction.guild.members]
+    print("Guild:", interaction.guild.name)
+    print("Guild ID:", interaction.guild.id)
+    print("Member IDs:", member_ids)
+    print("Your ID:", interaction.user.id)
     with pool.connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -1145,6 +1153,10 @@ def get_good_leaderboard(interaction):
             return top_players
 def get_evil_leaderboard(interaction):
     member_ids = [member.id for member in interaction.guild.members]
+    print("Guild:", interaction.guild.name)
+    print("Guild ID:", interaction.guild.id)
+    print("Member IDs:", member_ids)
+    print("Your ID:", interaction.user.id)
     with pool.connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("""
