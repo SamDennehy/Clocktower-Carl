@@ -57,8 +57,11 @@ with pool.connection() as connection:
                 custom_games INTEGER DEFAULT 0,
                 custom_wins INTEGER DEFAULT 0,
 
-                ragebait_games INTEGER DEFAULT 0,
-                ragebait_wins INTEGER DEFAULT 0
+                total_games INTEGER DEFAULT minion_games + demon_games + traveller_evil_games + townsfolk_games + outsider_games + traveller_good_games,
+                total_wins INTEGER DEFAULT minion_wins + demon_wins + traveller_evil_wins + townsfolk_wins + outsider_wins + traveller_good_wins,
+
+                whale_buffet_games INTEGER DEFAULT 0,
+                whale_buffet_wins INTEGER DEFAULT 0,
             )
         """)
 
@@ -84,7 +87,7 @@ def create_player(discord_id):
             """, (discord_id,))
 
             connection.commit()
-def record_game_result(discord_id, alignment, character_type, ragebait, script, result):
+def record_game_result(discord_id, alignment, character_type, script, result):
     create_player(discord_id)
 
     character_type_prefix = f"{character_type.lower()}_"
@@ -104,10 +107,6 @@ def record_game_result(discord_id, alignment, character_type, ragebait, script, 
                             {script_prefix}games + 1,
                         {script_prefix}wins =
                             {script_prefix}wins + 1,
-                        ragebait_games =
-                            ragebait_games + {ragebait},
-                        ragebait_wins =
-                            ragebait_wins + {ragebait}
                     WHERE discord_id = %s
                 """, (discord_id,))
 
@@ -118,8 +117,6 @@ def record_game_result(discord_id, alignment, character_type, ragebait, script, 
                             {character_type_prefix}games + 1,
                         {script_prefix}games =
                             {script_prefix}games + 1, 
-                        ragebait_games =
-                            ragebait_games + {ragebait}
                     WHERE discord_id = %s
                 """, (discord_id,))
 
@@ -127,7 +124,7 @@ def record_game_result(discord_id, alignment, character_type, ragebait, script, 
 
     print(
         f"Recorded game result for Discord ID {discord_id}: "
-        f"{alignment} {character_type} - {result} - {script_dict.get(script, script)} - Ragebait: {'Yes' if ragebait else 'No'}"
+        f"{alignment} {character_type} - {result} - {script_dict.get(script, script)}"
     )
 def get_player_stats(discord_id):
     with pool.connection() as connection:
@@ -140,12 +137,21 @@ def get_player_stats(discord_id):
 
             return cursor.fetchone()
 
+scripts = [
+    "trouble_brewing",
+    "bad_moon_rising",
+    "sects_and_violets",
+    "teenysville",
+    "whale_buffet"
+    ]
+
 script_dict = {
     "trouble_brewing": "Trouble Brewing",
     "bad_moon_rising": "Bad Moon Rising",
     "sects_and_violets": "Sects & Violets",
     "teenysville": "Teenysville",
-    "custom": "Custom Script"
+    "custom": "Custom Script",
+    "whale_buffet": "Whale Buffet"
 }
 
 townsfolk = ["steward",
@@ -534,7 +540,7 @@ class InputAlignment(discord.ui.View):
         # Check who clicked the menu FIRST
         if interaction.user != self.user:
             await interaction.response.send_message(
-                "This menu isn't for you fuckhead.",
+                "This menu isn't for you.",
                 ephemeral=True
             )
             return
@@ -586,7 +592,7 @@ class InputGoodType(discord.ui.View):
         # Check who clicked the menu FIRST
         if interaction.user != self.user:
             await interaction.response.send_message(
-                "This menu isn't for you fuckhead.",
+                "This menu isn't for you.",
                 ephemeral=True
             )
             return
@@ -595,7 +601,7 @@ class InputGoodType(discord.ui.View):
 
         await interaction.response.send_message(
             "Did you ragebait anybody?",
-            view=InputRagebait(self.user, self.alignment, choice),
+            view=InputScript(self.user, self.alignment, self.character_type, False, None),
             ephemeral=True
         )  
 class InputEvilType(discord.ui.View):
@@ -628,7 +634,7 @@ class InputEvilType(discord.ui.View):
         # Check who clicked the menu FIRST
         if interaction.user != self.user:
             await interaction.response.send_message(
-                "This menu isn't for you fuckhead.",
+                "This menu isn't for you.",
                 ephemeral=True
             )
             return
@@ -637,57 +643,17 @@ class InputEvilType(discord.ui.View):
 
         await interaction.response.send_message(
             "Did you ragebait anybody?",
-            view=InputRagebait(self.user, self.alignment, choice),
+            view=InputScript(self.user, self.alignment, self.character_type, False, None),
             ephemeral=True
         )      
-class InputRagebait(discord.ui.View):
-    def __init__(self, user, alignment, character_type):
-        super().__init__()
-        self.user = user
-        self.alignment = alignment
-        self.character_type = character_type
-    @discord.ui.select(
-        placeholder="Did you ragebait anybody?",
-        min_values=1,
-        max_values=1,
-        options=[
-            discord.SelectOption(
-                label="Yes",
-                value=1
-            ),
-            discord.SelectOption(
-                label="No",
-                value=0
-            )
-        ]
-    )
-    async def select_callback(
-        self,
-        interaction: discord.Interaction,
-        select: discord.ui.Select
-    ):
-        # Check who clicked the menu FIRST
-        if interaction.user != self.user:
-            await interaction.response.send_message(
-                "This menu isn't for you fuckhead.",
-                ephemeral=True
-            )
-            return
-
-        choice = select.values[0]
-
-        await interaction.response.send_message(
-            "Select the script you played with:",
-            view=InputScript(self.user, self.alignment, self.character_type, choice),
-            ephemeral=True
-        )
 class InputScript(discord.ui.View):
-    def __init__(self, user, alignment, character_type, ragebait):
+    def __init__(self, user, alignment, character_type, massBool, discord_id_role_dict):
         super().__init__()
         self.user = user
         self.alignment = alignment
         self.character_type = character_type
-        self.ragebait = ragebait
+        self.massBool = massBool
+        self.discord_id_role_dict = discord_id_role_dict
     @discord.ui.select(
         placeholder="Choose a character type",
         min_values=1,
@@ -710,6 +676,10 @@ class InputScript(discord.ui.View):
                 value="teenysville"
             ),
             discord.SelectOption(
+                label="Whale Buffet",
+                value="whale_buffet"
+            ),
+            discord.SelectOption(
                 label="Custom Script",
                 value="custom"
             ),
@@ -723,25 +693,31 @@ class InputScript(discord.ui.View):
         # Check who clicked the menu FIRST
         if interaction.user != self.user:
             await interaction.response.send_message(
-                "This menu isn't for you fuckhead.",
+                "This menu isn't for you.",
                 ephemeral=True
             )
             return
         
         choice = select.values[0]
 
+        if self.massBool:
+            await interaction.response.send_message(
+                "Input your game results:",
+                view=InputMassResults(self.user, self.discord_id_role_dict, choice),
+                ephemeral=True
+            ) 
+
         await interaction.response.send_message(
             "Input your game results:",
-            view=InputResults(self.user, self.alignment, self.character_type, self.ragebait, choice),
+            view=InputResults(self.user, self.alignment, self.character_type, choice),
             ephemeral=True
         )
 class InputResults(discord.ui.View):
-    def __init__(self, user, alignment, character_type, ragebait, script):
+    def __init__(self, user, alignment, character_type, script):
         super().__init__()
         self.user = user
         self.alignment = alignment
         self.character_type = character_type
-        self.ragebait = ragebait
         self.script = script
 
     @discord.ui.select(
@@ -769,17 +745,16 @@ class InputResults(discord.ui.View):
 
         await interaction.response.send_message(
             f"You chose: {self.alignment.title()} {self.character_type.title()} played on: {script_dict.get(self.script, self.script)}, with result: {result.title()}. Is this correct?",
-            view=ConfirmInput(self.user, self.alignment, self.character_type, self.script, self.ragebait, result),
+            view=ConfirmInput(self.user, self.alignment, self.character_type, self.script, result),
             ephemeral=True
         )  
 class ConfirmInput(discord.ui.View):
-    def __init__(self, user, alignment, character_type, script, ragebait, result):
+    def __init__(self, user, alignment, character_type, script, result):
         super().__init__()
         self.user = user
         self.alignment = alignment
         self.character_type = character_type
         self.script = script
-        self.ragebait = ragebait
         self.result = result
 
     @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green)
@@ -799,7 +774,6 @@ class ConfirmInput(discord.ui.View):
             interaction.user.id,
             self.alignment,
             self.character_type,
-            self.ragebait,
             self.script,
             self.result
         )
@@ -884,8 +858,11 @@ async def display_stats(interaction: discord.Interaction):
     custom_games = stats[21]
     custom_wins = stats[22]
 
-    ragebait_games = stats[23]
-    ragebait_wins = stats[24]
+    overall_games = stats[23]
+    overall_wins = stats[24]
+
+    whale_buffet_games = stats[25]
+    whale_buffet_wins = stats[26]
 
     # Alignment totals
     good_games = townsfolk_games + outsider_games + traveller_good_games
@@ -893,10 +870,6 @@ async def display_stats(interaction: discord.Interaction):
 
     evil_games = minion_games + demon_games + traveller_evil_games
     evil_wins = minion_wins + demon_wins + traveller_evil_wins
-
-    # Overall totals
-    overall_games = good_games + evil_games
-    overall_wins = good_wins + evil_wins
 
     # Win rates
     if good_games > 0:
@@ -969,10 +942,10 @@ async def display_stats(interaction: discord.Interaction):
     else:
         custom_win_rate = 0
 
-    if ragebait_games > 0:
-        ragebait_win_rate = (ragebait_wins / ragebait_games) * 100
+    if whale_buffet_games > 0:
+        whale_buffet_win_rate = (whale_buffet_wins / whale_buffet_games) * 100
     else:
-        ragebait_win_rate = 0
+        whale_buffet_win_rate = 0
 
     # Create embed
     embed = discord.Embed(
@@ -1065,8 +1038,8 @@ async def display_stats(interaction: discord.Interaction):
     )
 
     embed.add_field(
-        name=character_emojis.get("ragebait", "") + "Ragebait",
-        value=f"Games: {ragebait_games}, Wins: {ragebait_wins},\n Win Rate: {ragebait_win_rate:.2f}%",
+        name="🐋" + "Whale Buffet",
+        value=f"Games: {whale_buffet_games}, Wins: {whale_buffet_wins},\n Win Rate: {whale_buffet_win_rate:.2f}%",
         inline=True
     )
 
@@ -1295,6 +1268,176 @@ async def timer(interaction: discord.Interaction, seconds: int):
     )
     await asyncio.sleep(seconds)
     await interaction.channel.send("@here everyone return to townsquare, your timer has ended!")
+
+class JSONModal(discord.ui.Modal, title="Import BOTC JSON"):
+
+    json_input = discord.ui.TextInput(
+        label="Paste your Game State JSON:",
+        style=discord.TextStyle.paragraph,
+        required=True,
+        max_length=4000
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+
+        try:
+            data = json.loads(self.json_input.value)
+
+        except json.JSONDecodeError:
+            await interaction.response.send_message(
+                "That isn't valid JSON.",
+                ephemeral=True
+            )
+            return
+
+        discord_id_role_dict = {}
+        players = data["players"]
+        for player in players:
+            discord_id = player.get("pronouns").strip() if player.get("pronouns") else None
+            role = player.get("role").strip() if player.get("role") else None
+
+            if discord_id and role:
+                discord_id_role_dict[discord_id] = role
+
+        await interaction.response.send_message(
+            "Select the script you played with:",
+            view=InputScript(None, None, None, None, True, discord_id_role_dict),
+            ephemeral=True
+        )
+class Player():
+    def __init__(self, discord_id, alignment, character_type, script, result):
+        self.discord_id = discord_id
+        self.alignment = alignment
+        self.character_type = character_type
+        self.script = script
+        self.result = result
+class InputMassResults(discord.ui.View):
+    def __init__(self, user, discord_id_role_dict, script):
+        super().__init__()
+        self.user = user
+        self.discord_id_role_dict = discord_id_role_dict
+        self.script = script
+
+    @discord.ui.select(
+        placeholder="Which allignment won?",
+        min_values=1,
+        max_values=1,
+        options=[
+            discord.SelectOption(
+                label="Good"
+            ),
+            discord.SelectOption(
+                label="Evil"
+            ),
+        ]
+    )
+
+    async def select_callback(
+        self,
+        interaction: discord.Interaction,
+        select: discord.ui.Select
+    ):
+        # Check who clicked the menu FIRST
+        if interaction.user != self.user:
+            await interaction.response.send_message(
+                "This menu isn't for you.",
+                ephemeral=True
+            )
+            return
+
+        players = []
+        winner = select.values[0]
+        for discord_id, role in self.discord_id_role_dict.items():
+            if discord_id and role:
+                category = ""
+                alignment = ""
+                if role in townsfolk:
+                    category = "townsfolk"
+                    alignment = "good"
+                elif role in outsiders:
+                    category = "outsider"
+                    alignment = "good"
+                elif role in minions:
+                    category = "minion"
+                    alignment = "evil"
+                elif role in demons:
+                    category = "demon"
+                    alignment = "evil"
+        
+            player = Player(
+                discord_id=discord_id,
+                alignment=alignment,
+                character_type=category,
+                script=self.script,
+                result="win" if alignment == winner.lower() else "lose"
+            )
+            players.append(player)
+
+        confirm_string = ""
+        for player in players:
+            confirm_string += f"{player.discord_id} played as {player.character_type} ({player.alignment}) in {script_dict.get(player.script, player.script)} and {'won' if player.result == 'win' else 'lost'}.\n"
+        confirm_string += f"{winner} team won the game. Is this correct?"
+        await interaction.response.send_message(
+            confirm_string,
+            view=ConfirmMassInput(self.user, players),
+            ephemeral=True
+        )
+class ConfirmMassInput(discord.ui.View):
+    def __init__(self, user, players):
+        super().__init__()
+        self.user = user
+        self.players = players
+
+    @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green)
+    async def confirm_callback(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button
+    ):
+        if interaction.user != self.user:
+            await interaction.response.send_message(
+                "This button isn't for you.",
+                ephemeral=True
+            )
+            return
+
+        for player in self.players:
+            record_game_result(
+                player.discord_id,
+                player.alignment,
+                player.character_type,
+                player.script,
+                player.result
+            )
+
+        await interaction.response.send_message(
+            "Your game results have been recorded.",
+            ephemeral=True
+        )
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red)
+    async def cancel_callback(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button
+    ):
+        if interaction.user != self.user:
+            await interaction.response.send_message(
+                "This button isn't for you.",
+                ephemeral=True
+            )
+            return
+
+        await interaction.response.send_message(
+            "Your game results have not been recorded.",
+            ephemeral=True
+        )
+@bot.tree.command(name="mass_log_stats")
+async def mass_log_stats(interaction: discord.Interaction):
+    await interaction.response.send_message(
+        "Paste your Game State JSON:",
+        modal=JSONModal(),
+        ephemeral=True
+    )
 
 # Step 5: Start the bot
 def run_bot():
