@@ -1288,7 +1288,7 @@ class JSONModal(discord.ui.Modal, title="Import BOTC JSON"):
     )
 
     async def on_submit(self, interaction: discord.Interaction):
-
+        print("JSON MODAL SUBMITTED")
         # Check who clicked the menu FIRST
         if interaction.user != self.user:
             await interaction.response.send_message(
