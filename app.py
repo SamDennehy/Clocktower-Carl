@@ -1408,7 +1408,7 @@ class InputMassResults(discord.ui.View):
 
         confirm_string = ""
         for player in players:
-            confirm_string += f"<@{player.discord_id}> played as {player.character_type} ({player.alignment}) in {script_dict.get(player.script, player.script)} and {'won' if player.result == 'win' else 'lost'}.\n"
+            confirm_string += f"<@{player.discord_id}> played as {player.character_type} ({player.alignment}) in {script_dict.get(player.script, player.script)} and {'won' if player.result.lower() == 'win' else 'lost'}.\n"
         confirm_string += f"{winner} team won the game. Is this correct?"
         await interaction.response.send_message(
             confirm_string,
