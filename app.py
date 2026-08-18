@@ -106,7 +106,7 @@ def record_game_result(discord_id, alignment, character_type, script, result):
                         {script_prefix}games =
                             {script_prefix}games + 1,
                         {script_prefix}wins =
-                            {script_prefix}wins + 1,
+                            {script_prefix}wins + 1
                     WHERE discord_id = %s
                 """, (discord_id,))
 
@@ -116,7 +116,7 @@ def record_game_result(discord_id, alignment, character_type, script, result):
                     SET {character_type_prefix}games =
                             {character_type_prefix}games + 1,
                         {script_prefix}games =
-                            {script_prefix}games + 1, 
+                            {script_prefix}games + 1
                     WHERE discord_id = %s
                 """, (discord_id,))
 
@@ -601,7 +601,7 @@ class InputGoodType(discord.ui.View):
 
         await interaction.response.send_message(
             "Did you ragebait anybody?",
-            view=InputScript(self.user, self.alignment, self.character_type, False, None),
+            view=InputScript(self.user, self.alignment, choice, False, None),
             ephemeral=True
         )  
 class InputEvilType(discord.ui.View):
@@ -643,7 +643,7 @@ class InputEvilType(discord.ui.View):
 
         await interaction.response.send_message(
             "Did you ragebait anybody?",
-            view=InputScript(self.user, self.alignment, self.character_type, False, None),
+            view=InputScript(self.user, self.alignment, choice, False, None),
             ephemeral=True
         )      
 class InputScript(discord.ui.View):
@@ -1318,7 +1318,7 @@ class JSONModal(discord.ui.Modal, title="Import BOTC JSON"):
 
         await interaction.response.send_message(
             "Select the script you played with:",
-            view=InputScript(self.user, None, None, None, True, discord_id_role_dict),
+            view=InputScript(self.user, None, None, True, discord_id_role_dict),
             ephemeral=True
         )
 class Player():
