@@ -407,7 +407,7 @@ def build_download_script_and_preview(values):
 
     return [generated_script, preview_dict]
 
-@bot.tree.command(name="generate_script")
+@bot.tree.command(name="generate_script" , description="Generate a random script with specified counts of each character type")
 @discord.app_commands.describe(
     townsfolk_count="Number of Townsfolk",
     outsider_count="Number of Outsiders",
@@ -803,7 +803,7 @@ class ConfirmInput(discord.ui.View):
             ephemeral=True
         )
 
-@bot.tree.command(name="log_stats")
+@bot.tree.command(name="log_stats", description="Log your personal game stats")
 async def log_stats(interaction: discord.Interaction):
     await interaction.response.send_message(
         "Choose an Alignment",
@@ -811,7 +811,7 @@ async def log_stats(interaction: discord.Interaction):
         ephemeral=True
     )
 
-@bot.tree.command(name="display_stats")
+@bot.tree.command(name="display_stats", description="Display your personal game stats")
 async def display_stats(interaction: discord.Interaction):
     discord_id = interaction.user.id
 
@@ -1242,7 +1242,7 @@ class LeaderboardView(discord.ui.View):
             view=self
         )
 
-@bot.tree.command(name="leaderboard")
+@bot.tree.command(name="leaderboard" , description="Display the top 10 players in the server by win rate")
 async def leaderboard(interaction: discord.Interaction):
 
     top_players = get_win_leaderboard()
@@ -1276,6 +1276,9 @@ async def timer(interaction: discord.Interaction, seconds: int):
     await interaction.channel.send("@here everyone return to townsquare, your timer has ended!")
 
 class JSONModal(discord.ui.Modal, title="Import BOTC JSON"):
+    def __init__(self, user):
+        super().__init__()
+        self.user = user
 
     json_input = discord.ui.TextInput(
         label="Paste your Game State JSON:",
@@ -1285,6 +1288,14 @@ class JSONModal(discord.ui.Modal, title="Import BOTC JSON"):
     )
 
     async def on_submit(self, interaction: discord.Interaction):
+
+        # Check who clicked the menu FIRST
+        if interaction.user != self.user:
+            await interaction.response.send_message(
+                "This menu isn't for you.",
+                ephemeral=True
+            )
+            return
 
         try:
             data = json.loads(self.json_input.value)
@@ -1437,13 +1448,12 @@ class ConfirmMassInput(discord.ui.View):
             "Your game results have not been recorded.",
             ephemeral=True
         )
-@bot.tree.command(name="mass_log_stats")
+@bot.tree.command(
+    name="mass_log_stats",
+    description="Log game results for multiple players at once using the Game State JSON from the clocktower.live app"
+)
 async def mass_log_stats(interaction: discord.Interaction):
-    await interaction.response.send_message(
-        "Paste your Game State JSON:",
-        modal=JSONModal(),
-        ephemeral=True
-    )
+    await interaction.response.send_modal(JSONModal(interaction.user))
 
 # Step 5: Start the bot
 def run_bot():
