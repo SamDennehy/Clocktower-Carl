@@ -1096,6 +1096,7 @@ async def create_leaderboard_embed(interaction, top_players, title):
 
     return embed
 async def get_win_leaderboard(interaction):
+    print("Fetching overall leaderboard...")
     with pool.connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -1135,6 +1136,7 @@ async def get_win_leaderboard(interaction):
 
     return top_players
 async def get_good_leaderboard(interaction):
+    print("Fetching good leaderboard...")
     with pool.connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -1169,6 +1171,7 @@ async def get_good_leaderboard(interaction):
 
     return top_players
 async def get_evil_leaderboard(interaction):
+    print("Fetching evil leaderboard...")
     with pool.connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("""
