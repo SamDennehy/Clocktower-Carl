@@ -354,25 +354,25 @@ async def check_database():
 async def on_ready():
     global character_emojis
 
+    print("READY EVENT FIRED")
+
+    print("API REQUEST: fetch_application_emojis()")
     emojis = await bot.fetch_application_emojis()
+    print(f"API RESPONSE: received {len(emojis)} application emojis")
 
     character_emojis = {
         emoji.name: str(emoji)
         for emoji in emojis
     }
 
+    print("API REQUEST: bot.tree.sync()")
     synced_commands = await bot.tree.sync()
+    print(f"API RESPONSE: synced {len(synced_commands)} commands")
 
     print(f"Logged in successfully as {bot.user.name}")
-    print(f"Loaded {len(character_emojis)} application emojis")
-    print(f"Synced {len(synced_commands)} slash commands:")
-    
-    for command in synced_commands:
-        print(f" - /{command.name}")
 
     if not check_database.is_running():
         check_database.start()
-
 def build_download_script_and_preview(values):
     print(f"Building download script and preview with values: {values}")
     townsfolk_count = values[0]
@@ -1428,7 +1428,11 @@ class InputMassResults(discord.ui.View):
                     alignment = "evil"
 
                 try:
-                    await discord.utils.fetch_user(discord_id)
+                    member = interaction.guild.get_member(discord_id)
+
+                    if member is None:
+                        member = await interaction.guild.fetch_member(discord_id)
+
                     player = Player(
                         discord_id=discord_id,
                         alignment=alignment,
@@ -1436,13 +1440,11 @@ class InputMassResults(discord.ui.View):
                         script=self.script,
                         result="Win" if alignment.lower() == winner.lower() else "Lose"
                     )
+
                     players.append(player)
+
                 except discord.NotFound:
-                    await interaction.response.send_message(
-                        f"Could not find user with Discord ID {discord_id}. Please ensure the ID is correct.",
-                        ephemeral=True
-                    )
-                    return
+                    pass
 
         confirm_string = ""
         for player in players:
