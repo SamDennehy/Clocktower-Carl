@@ -424,6 +424,7 @@ async def generate_script(
     demon_count: int | None = None,
     npc_count: int | None = None
 ):
+    print(f"Generating script with counts - Townsfolk: {townsfolk_count}, Outsiders: {outsider_count}, Minions: {minion_count}, Demons: {demon_count}, NPCs: {npc_count}")
     values = [
     townsfolk_count if townsfolk_count is not None else 13,
     outsider_count if outsider_count is not None else 4,
@@ -488,6 +489,7 @@ async def choose_storyteller(
     names: str,
     num: int = 1
 ):
+    print(f"Choosing {num} storytellers from names: {names}")
     names = [
         name.strip()
         for name in names.split(",")
@@ -806,6 +808,7 @@ class ConfirmInput(discord.ui.View):
 
 @bot.tree.command(name="log_stats", description="Log your personal game stats")
 async def log_stats(interaction: discord.Interaction):
+    print(f"Logging stats for Discord ID {interaction.user.id}")
     await interaction.response.send_message(
         "Choose an Alignment",
         view=InputAlignment(interaction.user),
@@ -815,6 +818,7 @@ async def log_stats(interaction: discord.Interaction):
 @bot.tree.command(name="display_stats", description="Display your personal game stats")
 async def display_stats(interaction: discord.Interaction):
     discord_id = interaction.user.id
+    print(f"Displaying stats for Discord ID {discord_id}")
 
     if not player_exists(discord_id):
         await interaction.response.send_message(
@@ -1092,12 +1096,6 @@ async def create_leaderboard_embed(interaction, top_players, title):
 
     return embed
 async def get_win_leaderboard(interaction):
-    members = [member async for member in interaction.guild.fetch_members(limit=None)]
-    member_ids = [member.id for member in members]
-    print("Guild:", interaction.guild.name)
-    print("Guild ID:", interaction.guild.id)
-    print("Member IDs:", member_ids)
-    print("Your ID:", interaction.user.id)
     with pool.connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -1108,8 +1106,7 @@ async def get_win_leaderboard(interaction):
                     townsfolk_games + outsider_games + traveller_good_games +
                     traveller_evil_games + minion_games + demon_games AS total_games
                 FROM player_stats
-                WHERE discord_id = ANY(%s)
-                AND townsfolk_games + outsider_games + traveller_good_games +
+                WHERE townsfolk_games + outsider_games + traveller_good_games +
                       traveller_evil_games + minion_games + demon_games >= 5
                 ORDER BY
                     (townsfolk_wins + outsider_wins + traveller_good_wins +
@@ -1120,18 +1117,24 @@ async def get_win_leaderboard(interaction):
                         traveller_evil_games + minion_games + demon_games,
                         0
                     ) DESC NULLS LAST
-                LIMIT 10
-            """, (member_ids,))
+                LIMIT 50
+            """)
 
-            top_players = cursor.fetchall()
-            return top_players
+            candidates = cursor.fetchall()
+
+    top_players = []
+
+    for discord_id, wins, games in candidates:
+        member = interaction.guild.get_member(discord_id)
+
+        if member is not None:
+            top_players.append((discord_id, wins, games))
+
+        if len(top_players) == 10:
+            break
+
+    return top_players
 async def get_good_leaderboard(interaction):
-    members = [member async for member in interaction.guild.fetch_members(limit=None)]
-    member_ids = [member.id for member in members]
-    print("Guild:", interaction.guild.name)
-    print("Guild ID:", interaction.guild.id)
-    print("Member IDs:", member_ids)
-    print("Your ID:", interaction.user.id)
     with pool.connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -1140,8 +1143,7 @@ async def get_good_leaderboard(interaction):
                     townsfolk_wins + outsider_wins + traveller_good_wins AS total_wins,
                     townsfolk_games + outsider_games + traveller_good_games AS total_games
                 FROM player_stats
-                WHERE discord_id = ANY(%s)
-                AND townsfolk_games + outsider_games + traveller_good_games >= 5
+                WHERE townsfolk_games + outsider_games + traveller_good_games >= 5
                 ORDER BY
                     (townsfolk_wins + outsider_wins + traveller_good_wins)::float
                     /
@@ -1149,18 +1151,24 @@ async def get_good_leaderboard(interaction):
                         townsfolk_games + outsider_games + traveller_good_games,
                         0
                     ) DESC NULLS LAST
-                LIMIT 10
-            """, (member_ids,))
+                LIMIT 50
+            """)
 
-            top_players = cursor.fetchall()
-            return top_players
+            candidates = cursor.fetchall()
+
+    top_players = []
+
+    for discord_id, wins, games in candidates:
+        member = interaction.guild.get_member(discord_id)
+
+        if member is not None:
+            top_players.append((discord_id, wins, games))
+
+        if len(top_players) == 10:
+            break
+
+    return top_players
 async def get_evil_leaderboard(interaction):
-    members = [member async for member in interaction.guild.fetch_members(limit=None)]
-    member_ids = [member.id for member in members]
-    print("Guild:", interaction.guild.name)
-    print("Guild ID:", interaction.guild.id)
-    print("Member IDs:", member_ids)
-    print("Your ID:", interaction.user.id)
     with pool.connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -1169,20 +1177,30 @@ async def get_evil_leaderboard(interaction):
                     minion_wins + demon_wins + traveller_evil_wins AS total_wins,
                     traveller_evil_games + minion_games + demon_games AS total_games
                 FROM player_stats
-                WHERE discord_id = ANY(%s)
-                AND traveller_evil_games + minion_games + demon_games >= 5
+                WHERE traveller_evil_games + minion_games + demon_games >= 5
                 ORDER BY
                     (minion_wins + demon_wins + traveller_evil_wins)::float
                     /
-                    NULLIF(
-                        traveller_evil_games + minion_games + demon_games,
+                    NULLIF(traveller_evil_games + minion_games + demon_games,
                         0
                     ) DESC NULLS LAST
-                LIMIT 10
-            """, (member_ids,))
+                LIMIT 50
+            """)
 
-            top_players = cursor.fetchall()
-            return top_players
+            candidates = cursor.fetchall()
+
+    top_players = []
+
+    for discord_id, wins, games in candidates:
+        member = interaction.guild.get_member(discord_id)
+
+        if member is not None:
+            top_players.append((discord_id, wins, games))
+
+        if len(top_players) == 10:
+            break
+
+    return top_players
 
 class LeaderboardView(discord.ui.View):
     def __init__(self, user):
@@ -1260,7 +1278,7 @@ class LeaderboardView(discord.ui.View):
 
 @bot.tree.command(name="leaderboard" , description="Display the top 10 players in the server by win rate")
 async def leaderboard(interaction: discord.Interaction):
-
+    print(f"Displaying leaderboard for Discord ID {interaction.user.id}")
     top_players = await get_win_leaderboard(interaction)
 
     if not top_players:
@@ -1284,6 +1302,7 @@ async def leaderboard(interaction: discord.Interaction):
 
 @bot.tree.command(name="timer", description="Set a timer in seconds to ping @here when it ends")
 async def timer(interaction: discord.Interaction, seconds: int):
+    print(f"Setting timer for {seconds} seconds for Discord ID {interaction.user.id}")
     await interaction.response.send_message(
         f"Timer set for {seconds} seconds.",
         ephemeral=True
@@ -1304,7 +1323,7 @@ class JSONModal(discord.ui.Modal, title="Import BOTC JSON"):
     )
 
     async def on_submit(self, interaction: discord.Interaction):
-        print("JSON MODAL SUBMITTED")
+        print(f"Submitting JSON for Discord ID {interaction.user.id}")
         # Check who clicked the menu FIRST
         if interaction.user != self.user:
             await interaction.response.send_message(
@@ -1328,6 +1347,10 @@ class JSONModal(discord.ui.Modal, title="Import BOTC JSON"):
         for player in players:
             discord_id = player.get("pronouns").strip() if player.get("pronouns") else None
             role = player.get("role").strip() if player.get("role") else None
+            try:
+                discord_id = int(discord_id)
+            except (ValueError, TypeError):
+                discord_id = None
 
             if discord_id and role:
                 discord_id_role_dict[discord_id] = role
@@ -1397,15 +1420,22 @@ class InputMassResults(discord.ui.View):
                     category = "demon"
                     alignment = "evil"
 
-            if alignment:
-                player = Player(
-                    discord_id=discord_id,
-                    alignment=alignment,
-                    character_type=category,
-                    script=self.script,
-                    result="Win" if alignment.lower() == winner.lower() else "Lose"
-                )
-                players.append(player)
+                try:
+                    await discord.utils.fetch_user(discord_id)
+                    player = Player(
+                        discord_id=discord_id,
+                        alignment=alignment,
+                        character_type=category,
+                        script=self.script,
+                        result="Win" if alignment.lower() == winner.lower() else "Lose"
+                    )
+                    players.append(player)
+                except discord.NotFound:
+                    await interaction.response.send_message(
+                        f"Could not find user with Discord ID {discord_id}. Please ensure the ID is correct.",
+                        ephemeral=True
+                    )
+                    return
 
         confirm_string = ""
         for player in players:
@@ -1470,6 +1500,7 @@ class ConfirmMassInput(discord.ui.View):
     description="Log game results for multiple players at once using the Game State JSON from the clocktower.live app"
 )
 async def mass_log_stats(interaction: discord.Interaction):
+    print(f"Logging mass stats for Discord ID {interaction.user.id}")
     await interaction.response.send_modal(JSONModal(interaction.user))
 
 # Step 5: Start the bot
