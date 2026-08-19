@@ -78,6 +78,7 @@ def player_exists(discord_id):
 
             return cursor.fetchone() is not None
 def create_player(discord_id):
+    print(f"Creating player record for Discord ID {discord_id}")
     with pool.connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -127,6 +128,7 @@ def record_game_result(discord_id, alignment, character_type, script, result):
         f"{alignment} {character_type} - {result} - {script_dict.get(script, script)}"
     )
 def get_player_stats(discord_id):
+    print(f"Fetching stats for Discord ID {discord_id}")
     with pool.connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("""
@@ -372,6 +374,7 @@ async def on_ready():
         check_database.start()
 
 def build_download_script_and_preview(values):
+    print(f"Building download script and preview with values: {values}")
     townsfolk_count = values[0]
     outsiders_count = values[1]
     minions_count = values[2]
@@ -1054,6 +1057,7 @@ async def display_stats(interaction: discord.Interaction):
     )
 
 async def create_leaderboard_embed(interaction, top_players, title):
+    print(f"Creating leaderboard embed for {title} with {len(top_players)} players")
     embed = discord.Embed(
         title=f"🏆 Leaderboard - {title}",
         color=discord.Color.gold()
