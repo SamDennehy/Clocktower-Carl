@@ -1523,10 +1523,6 @@ def run_bot():
     print("Starting Discord bot...")
     bot.run(TOKEN)
 
-web_thread = threading.Thread(target=run_web_server)
-web_thread.daemon = True
-web_thread.start()
-
 bot_thread = threading.Thread(target=run_bot)
 bot_thread.daemon = True
 bot_thread.start()
