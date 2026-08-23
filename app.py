@@ -1057,7 +1057,7 @@ async def display_stats(interaction: discord.Interaction):
         ephemeral=False
     )
 
-async def create_leaderboard_embed(top_players, title):
+async def create_leaderboard_embed(top_players, title, members=None):
     print(f"Creating leaderboard embed for {title} with {len(top_players)} players")
     embed = discord.Embed(
         title=f"🏆 Leaderboard - {title}",
@@ -1066,13 +1066,11 @@ async def create_leaderboard_embed(top_players, title):
     leaderboard = ""
 
     for position, player in enumerate(top_players, start=1):
-        try:
-            user = await bot.fetch_user(player[0])
-            name = user.display_name
-        except discord.NotFound:
+        if members is not None:
+            user = members.get(player[0])
+            name = user.display_name if user is not None else "Unknown User"
+        else:
             name = "Unknown User"
-
-        print(f"API REQUEST: fetch_user() for Discord ID {player[0]}")
 
         if player[2] > 0:
             win_rate = player[1] / player[2] * 100
@@ -1257,14 +1255,14 @@ class LeaderboardView(discord.ui.View):
         choice = select.values[0]
 
         if choice == "overall":
-            top_players = await get_win_leaderboard(interaction, self.members)
+            top_players = await get_win_leaderboard(self.members)
             title = "Top 10 Players by Overall Win Rate (minimum 5 games)"
 
         elif choice == "good":
-            top_players = await get_good_leaderboard(interaction, self.members)
+            top_players = await get_good_leaderboard(self.members)
             title = "Top 10 Players by Good Win Rate (minimum 5 games)"
         elif choice == "evil":
-            top_players = await get_evil_leaderboard(interaction, self.members)
+            top_players = await get_evil_leaderboard(self.members)
             title = "Top 10 Players by Evil Win Rate (minimum 5 games)"
 
         print("CHOICE:", choice)
@@ -1280,7 +1278,8 @@ class LeaderboardView(discord.ui.View):
 
         embed = await create_leaderboard_embed(
             top_players,
-            title
+            title,
+            self.members
         )
 
         await interaction.response.edit_message(
@@ -1288,36 +1287,30 @@ class LeaderboardView(discord.ui.View):
             view=self
         )
 
-@bot.tree.command(
-    name="leaderboard",
-    description="Display the top 10 players in the server by win rate"
-)
+@bot.tree.command(name="leaderboard" , description="Display the top 10 players in the server by win rate")
 async def leaderboard(interaction: discord.Interaction):
     print(f"Displaying leaderboard for Discord ID {interaction.user.id}")
-
-    await interaction.response.defer()
-
     members = {member.id: member for member in interaction.guild.members}
 
     top_players = await get_win_leaderboard(members)
 
     if not top_players:
-        await interaction.edit_original_response(
-            content="No players have recorded enough games for the leaderboard.",
-            embed=None,
-            view=None
+        await interaction.response.send_message(
+            "No players have recorded enough games for the leaderboard.",
+            ephemeral=True
         )
         return
 
     embed = await create_leaderboard_embed(
         top_players,
+        "Top 10 Players by Overall Win Rate (minimum 5 games)",
         members
     )
 
-    await interaction.edit_original_response(
-        content="Top 10 Players by Overall Win Rate (minimum 5 games)",
+    await interaction.response.send_message(
         embed=embed,
-        view=LeaderboardView(interaction.user, members)
+        view=LeaderboardView(interaction.user, members),
+        ephemeral=False
     )
 @bot.tree.command(name="timer", description="Set a timer in seconds to ping @here when it ends")
 async def timer(interaction: discord.Interaction, seconds: int):
@@ -1532,15 +1525,15 @@ async def on_message(message):
     await bot.process_commands(message)
 
 # Step 5: Start the bot
-def run_bot():
-    TOKEN = os.getenv("DISCORD_TOKEN")
+#def run_bot():
+TOKEN = os.getenv("DISCORD_TOKEN")
 
-    if not TOKEN:
-        print("ERROR: DISCORD_TOKEN environment variable is not set!")
+if not TOKEN:
+    print("ERROR: DISCORD_TOKEN environment variable is not set!")
 
-    print("Starting Discord bot...")
-    bot.run(TOKEN)
+print("Starting Discord bot...")
+bot.run(TOKEN)
 
-bot_thread = threading.Thread(target=run_bot)
-bot_thread.daemon = True
-bot_thread.start()
+#bot_thread = threading.Thread(target=run_bot)
+#bot_thread.daemon = True
+#bot_thread.start()
