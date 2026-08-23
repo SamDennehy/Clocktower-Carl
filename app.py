@@ -1073,6 +1073,8 @@ async def create_leaderboard_embed(interaction, top_players, title):
         except discord.NotFound:
             name = "Unknown User"
 
+        print(f"API REQUEST: fetch_user() for Discord ID {player[0]}")
+
         if player[2] > 0:
             win_rate = player[1] / player[2] * 100
         else:
@@ -1132,6 +1134,7 @@ async def get_win_leaderboard(interaction):
 
     for discord_id, wins, games in candidates:
         member = interaction.guild.get_member(discord_id)
+        print("API REQUEST: get_member() for Discord ID", discord_id)
 
         if member is not None:
             top_players.append((discord_id, wins, games))
@@ -1166,6 +1169,7 @@ async def get_good_leaderboard(interaction):
     top_players = []
 
     for discord_id, wins, games in candidates:
+        print("API REQUEST: get_member() for Discord ID", discord_id)       
         member = interaction.guild.get_member(discord_id)
 
         if member is not None:
@@ -1200,6 +1204,7 @@ async def get_evil_leaderboard(interaction):
     top_players = []
 
     for discord_id, wins, games in candidates:
+        print("API REQUEST: get_member() for Discord ID", discord_id)
         member = interaction.guild.get_member(discord_id)
 
         if member is not None:
@@ -1512,6 +1517,13 @@ class ConfirmMassInput(discord.ui.View):
 async def mass_log_stats(interaction: discord.Interaction):
     print(f"Logging mass stats for Discord ID {interaction.user.id}")
     await interaction.response.send_modal(JSONModal(interaction.user))
+
+@bot.event
+async def on_message(message):
+    if message.author.id == 123456789012345678:
+        await message.add_reaction("🏳️‍🌈")
+
+    await bot.process_commands(message)
 
 # Step 5: Start the bot
 def run_bot():
