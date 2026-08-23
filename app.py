@@ -1520,7 +1520,7 @@ async def mass_log_stats(interaction: discord.Interaction):
 
 @bot.event
 async def on_message(message):
-    if message.author.id == 123456789012345678:
+    if message.author.id == 1070421419277692938:
         await message.add_reaction("🏳️‍🌈")
 
     await bot.process_commands(message)
