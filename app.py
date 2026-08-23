@@ -1525,15 +1525,15 @@ async def on_message(message):
     await bot.process_commands(message)
 
 # Step 5: Start the bot
-#def run_bot():
-TOKEN = os.getenv("DISCORD_TOKEN")
+def run_bot():
+    TOKEN = os.getenv("DISCORD_TOKEN")
 
-if not TOKEN:
-    print("ERROR: DISCORD_TOKEN environment variable is not set!")
+    if not TOKEN:
+        print("ERROR: DISCORD_TOKEN environment variable is not set!")
 
-print("Starting Discord bot...")
-bot.run(TOKEN)
+    print("Starting Discord bot...")
+    bot.run(TOKEN)
 
-#bot_thread = threading.Thread(target=run_bot)
-#bot_thread.daemon = True
-#bot_thread.start()
+bot_thread = threading.Thread(target=run_bot)
+bot_thread.daemon = True
+bot_thread.start()
