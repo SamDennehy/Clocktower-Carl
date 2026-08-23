@@ -1063,7 +1063,6 @@ async def create_leaderboard_embed(interaction, top_players, title):
         title=f"🏆 Leaderboard - {title}",
         color=discord.Color.gold()
     )
-    members = interaction.guild.fetch
     leaderboard = ""
 
     for position, player in enumerate(top_players, start=1):
