@@ -1279,7 +1279,6 @@ class LeaderboardView(discord.ui.View):
             return
 
         embed = await create_leaderboard_embed(
-            interaction,
             top_players,
             title
         )
@@ -1289,33 +1288,37 @@ class LeaderboardView(discord.ui.View):
             view=self
         )
 
-@bot.tree.command(name="leaderboard" , description="Display the top 10 players in the server by win rate")
+@bot.tree.command(
+    name="leaderboard",
+    description="Display the top 10 players in the server by win rate"
+)
 async def leaderboard(interaction: discord.Interaction):
     print(f"Displaying leaderboard for Discord ID {interaction.user.id}")
-    members = {member.id: member for member in interaction.guild.members}
 
     await interaction.response.defer()
+
+    members = {member.id: member for member in interaction.guild.members}
 
     top_players = await get_win_leaderboard(members)
 
     if not top_players:
-        await interaction.response.send_message(
-            "No players have recorded enough games for the leaderboard.",
-            ephemeral=True
+        await interaction.edit_original_response(
+            content="No players have recorded enough games for the leaderboard.",
+            embed=None,
+            view=None
         )
         return
 
     embed = await create_leaderboard_embed(
         top_players,
-        "Top 10 Players by Overall Win Rate (minimum 5 games)"
+        "Top 10 Players by Overall Win Rate (minimum 5 games)",
+        members
     )
 
-    await interaction.response.send_message(
+    await interaction.edit_original_response(
         embed=embed,
-        view=LeaderboardView(interaction.user, members),
-        ephemeral=False
+        view=LeaderboardView(interaction.user, members)
     )
-
 @bot.tree.command(name="timer", description="Set a timer in seconds to ping @here when it ends")
 async def timer(interaction: discord.Interaction, seconds: int):
     print(f"Setting timer for {seconds} seconds for Discord ID {interaction.user.id}")
