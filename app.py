@@ -1057,7 +1057,7 @@ async def display_stats(interaction: discord.Interaction):
         ephemeral=False
     )
 
-async def create_leaderboard_embed(interaction, top_players, title):
+async def create_leaderboard_embed(top_players, title):
     print(f"Creating leaderboard embed for {title} with {len(top_players)} players")
     embed = discord.Embed(
         title=f"🏆 Leaderboard - {title}",
@@ -1101,7 +1101,7 @@ async def create_leaderboard_embed(interaction, top_players, title):
     )
 
     return embed
-async def get_win_leaderboard(interaction, members):
+async def get_win_leaderboard(members):
     print("Fetching overall leaderboard...")
     with pool.connection() as connection:
         with connection.cursor() as cursor:
@@ -1142,7 +1142,7 @@ async def get_win_leaderboard(interaction, members):
             break
 
     return top_players
-async def get_good_leaderboard(interaction, members):
+async def get_good_leaderboard(members):
     print("Fetching good leaderboard...")
     with pool.connection() as connection:
         with connection.cursor() as cursor:
@@ -1178,7 +1178,7 @@ async def get_good_leaderboard(interaction, members):
             break
 
     return top_players
-async def get_evil_leaderboard(interaction, members):
+async def get_evil_leaderboard(members):
     print("Fetching evil leaderboard...")
     with pool.connection() as connection:
         with connection.cursor() as cursor:
@@ -1293,7 +1293,10 @@ class LeaderboardView(discord.ui.View):
 async def leaderboard(interaction: discord.Interaction):
     print(f"Displaying leaderboard for Discord ID {interaction.user.id}")
     members = {member.id: member for member in interaction.guild.members}
-    top_players = await get_win_leaderboard(interaction, members)
+
+    await interaction.response.defer()
+
+    top_players = await get_win_leaderboard(members)
 
     if not top_players:
         await interaction.response.send_message(
@@ -1303,7 +1306,6 @@ async def leaderboard(interaction: discord.Interaction):
         return
 
     embed = await create_leaderboard_embed(
-        interaction,
         top_players,
         "Top 10 Players by Overall Win Rate (minimum 5 games)"
     )
