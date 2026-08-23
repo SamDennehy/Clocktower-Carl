@@ -1315,7 +1315,7 @@ async def leaderboard(interaction: discord.Interaction):
     )
 
     await interaction.edit_original_response(
-        "Top 10 Players by Overall Win Rate (minimum 5 games)",
+        content="Top 10 Players by Overall Win Rate (minimum 5 games)",
         embed=embed,
         view=LeaderboardView(interaction.user, members)
     )
