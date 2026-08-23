@@ -1294,7 +1294,6 @@ class LeaderboardView(discord.ui.View):
 async def leaderboard(interaction: discord.Interaction):
     print(f"Displaying leaderboard for Discord ID {interaction.user.id}")
     members = {member.id: member for member in interaction.guild.members}
-    print(f"Fetched {len(members)} members from guild {interaction.guild.name} (ID: {interaction.guild.id})")
     top_players = await get_win_leaderboard(interaction, members)
 
     if not top_players:
