@@ -1517,13 +1517,6 @@ async def mass_log_stats(interaction: discord.Interaction):
     print(f"Logging mass stats for Discord ID {interaction.user.id}")
     await interaction.response.send_modal(JSONModal(interaction.user))
 
-@bot.event
-async def on_message(message):
-    if message.author.id == 1070421419277692938:
-        await message.add_reaction("🏳️‍🌈")
-
-    await bot.process_commands(message)
-
 # Step 5: Start the bot
 def run_bot():
     TOKEN = os.getenv("DISCORD_TOKEN")
