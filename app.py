@@ -1489,7 +1489,7 @@ class ConfirmMassInput(discord.ui.View):
             )
 
         await interaction.response.send_message(
-            "Your massgame results have been recorded.",
+            f"{interaction.user.mention}, your mass game results have been recorded.",
             ephemeral=False
         )
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red)
@@ -1506,7 +1506,7 @@ class ConfirmMassInput(discord.ui.View):
             return
 
         await interaction.response.send_message(
-            "Your game results have not been recorded.",
+            f"{interaction.user.mention}, your game results have not been recorded.",
             ephemeral=True
         )
 @bot.tree.command(
@@ -1516,6 +1516,24 @@ class ConfirmMassInput(discord.ui.View):
 async def mass_log_stats(interaction: discord.Interaction):
     print(f"Logging mass stats for Discord ID {interaction.user.id}")
     await interaction.response.send_modal(JSONModal(interaction.user))
+
+@bot.tree.command(
+    name="help",
+    description="Get help with using the bot"
+)
+
+async def help_command(interaction: discord.Interaction):
+    help_text = (
+        "Here are the commands you can use:\n"
+        "- `/generate_script`: Generate a random script for your game\n"
+        "- `/choose_storyteller`: Choose a storyteller for your game\n"
+        "- `/timer <seconds>`: Set a timer in seconds to ping @here when it ends\n"
+        "- `/log_stats`: Log your personal game stats\n"
+        "- `/leaderboard`: Display the top 10 players in the server by win rate\n"
+        "- `/display_stats`: Display your personal game stats\n"
+        "- `/mass_log_stats`: Log game results for multiple players at once using the Game State JSON from the clocktower.live app\n"
+    )
+    await interaction.response.send_message(help_text, ephemeral=True)
 
 # Step 5: Start the bot
 def run_bot():
