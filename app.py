@@ -789,7 +789,7 @@ class ConfirmInput(discord.ui.View):
 
         await interaction.response.send_message(
             "Your game results have been recorded.",
-            ephemeral=True
+            ephemeral=False
         )
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red)
@@ -1317,7 +1317,7 @@ async def timer(interaction: discord.Interaction, seconds: int):
     print(f"Setting timer for {seconds} seconds for Discord ID {interaction.user.id}")
     await interaction.response.send_message(
         f"Timer set for {seconds} seconds.",
-        ephemeral=True
+        ephemeral=False
     )
     await asyncio.sleep(seconds)
     await interaction.channel.send("@here everyone return to townsquare, your timer has ended!")
@@ -1489,8 +1489,8 @@ class ConfirmMassInput(discord.ui.View):
             )
 
         await interaction.response.send_message(
-            "Your game results have been recorded.",
-            ephemeral=True
+            "Your massgame results have been recorded.",
+            ephemeral=False
         )
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red)
     async def cancel_callback(
