@@ -1312,7 +1312,7 @@ async def leaderboard(interaction: discord.Interaction):
         view=LeaderboardView(interaction.user, members),
         ephemeral=False
     )
-@bot.tree.command(name="timer", description="Set a timer in seconds to ping @here when it ends")
+@bot.tree.command(name="timer", description="Set a timer in seconds for the bot to send a message when it ends")
 async def timer(interaction: discord.Interaction, seconds: int):
     print(f"Setting timer for {seconds} seconds for Discord ID {interaction.user.id}")
     await interaction.response.send_message(
@@ -1320,7 +1320,7 @@ async def timer(interaction: discord.Interaction, seconds: int):
         ephemeral=False
     )
     await asyncio.sleep(seconds)
-    await interaction.channel.send("@here everyone return to townsquare, your timer has ended!")
+    await interaction.channel.send(f"{interaction.user.mention}, your timer has ended!")
 
 class JSONModal(discord.ui.Modal, title="Import BOTC JSON"):
     def __init__(self, user):
@@ -1527,7 +1527,7 @@ async def help_command(interaction: discord.Interaction):
         "Here are the commands you can use:\n"
         "- `/generate_script`: Generate a random script for your game\n"
         "- `/choose_storyteller`: Choose a storyteller for your game\n"
-        "- `/timer <seconds>`: Set a timer in seconds to ping @here when it ends\n"
+        "- `/timer <seconds>`: Set a timer in seconds for the bot to send a message when it ends\n"
         "- `/log_stats`: Log your personal game stats\n"
         "- `/leaderboard`: Display the top 10 players in the server by win rate\n"
         "- `/display_stats`: Display your personal game stats\n"
