@@ -806,7 +806,7 @@ class ConfirmInput(discord.ui.View):
             return
 
         await interaction.response.send_message(
-            "Your game results have not been recorded.",
+            f"{interaction.user.mention}, your game results have been recorded.",,
             ephemeral=True
         )
 
