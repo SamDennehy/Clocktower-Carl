@@ -334,7 +334,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-bot = commands.Bot(command_prefix='!', intents=intents)
+bot = commands.Bot(command_prefix='!', intents=intents, activity=discord.Game(name="Blood on the Clocktower"))
 
 character_emojis = {}
 synced = False
@@ -1312,6 +1312,7 @@ async def leaderboard(interaction: discord.Interaction):
         view=LeaderboardView(interaction.user, members),
         ephemeral=False
     )
+
 @bot.tree.command(name="timer", description="Set a timer in seconds for the bot to send a message when it ends")
 async def timer(interaction: discord.Interaction, seconds: int):
     print(f"Setting timer for {seconds} seconds for Discord ID {interaction.user.id}")
@@ -1525,8 +1526,8 @@ async def mass_log_stats(interaction: discord.Interaction):
 async def help_command(interaction: discord.Interaction):
     help_text = (
         "Here are the commands you can use:\n"
-        "- `/generate_script`: Generate a random script for your game\n"
-        "- `/choose_storyteller`: Choose a storyteller for your game\n"
+        "- `/generate_script <townsfolk_count>, <outsider_count>, <minions_count>, <demon_count>, <npc_count>`: Generate a random script for your game\n"
+        "- `/choose_storyteller <amount>`: Choose a storyteller for your game\n"
         "- `/timer <seconds>`: Set a timer in seconds for the bot to send a message when it ends\n"
         "- `/log_stats`: Log your personal game stats\n"
         "- `/leaderboard`: Display the top 10 players in the server by win rate\n"
