@@ -1514,10 +1514,10 @@ class ConfirmMassInput(discord.ui.View):
             f"{interaction.user.mention}, your game results have not been recorded.",
             ephemeral=True
         )
-@bot.tree.command(
-    name="mass_log_stats",
-    description="Log game results for multiple players at once using the Game State JSON from the clocktower.live app"
-)
+#@bot.tree.command(
+#    name="mass_log_stats",
+#    description="Log game results for multiple players at once using the Game State JSON from the clocktower.live app"
+#)
 async def mass_log_stats(interaction: discord.Interaction):
     print(f"Logging mass stats for Discord ID {interaction.user.id}")
     await interaction.response.send_modal(JSONModal(interaction.user))
@@ -1526,7 +1526,6 @@ async def mass_log_stats(interaction: discord.Interaction):
     name="help",
     description="Get help with using the bot"
 )
-
 async def help_command(interaction: discord.Interaction):
     help_text = (
         "Here are the commands you can use:\n"
@@ -1536,7 +1535,7 @@ async def help_command(interaction: discord.Interaction):
         "- `/log_stats`: Log your personal game stats\n"
         "- `/leaderboard`: Display the top 10 players in the server by win rate\n"
         "- `/display_stats`: Display your personal game stats\n"
-        "- `/mass_log_stats`: Log game results for multiple players at once using the Game State JSON from the clocktower.live app\n"
+        #"- `/mass_log_stats`: Log game results for multiple players at once using the Game State JSON from the clocktower.live app\n"
     )
     await interaction.response.send_message(help_text, ephemeral=True)
 
