@@ -1121,7 +1121,9 @@ async def get_win_leaderboard(members):
                         townsfolk_games + outsider_games + traveller_good_games +
                         traveller_evil_games + minion_games + demon_games,
                         0
-                    ) DESC NULLS LAST
+                    ) DESC NULLS LAST,
+                    townsfolk_games + outsider_games + traveller_good_games +
+                    traveller_evil_games + minion_games + demon_games DESC NULLS LAST
                 LIMIT 50
             """)
 
@@ -1157,7 +1159,8 @@ async def get_good_leaderboard(members):
                     NULLIF(
                         townsfolk_games + outsider_games + traveller_good_games,
                         0
-                    ) DESC NULLS LAST
+                    ) DESC NULLS LAST,
+                    townsfolk_games + outsider_games + traveller_good_games DESC NULLS LAST
                 LIMIT 50
             """)
 
@@ -1192,7 +1195,8 @@ async def get_evil_leaderboard(members):
                     /
                     NULLIF(traveller_evil_games + minion_games + demon_games,
                         0
-                    ) DESC NULLS LAST
+                    ) DESC NULLS LAST,
+                    traveller_evil_games + minion_games + demon_games DESC NULLS LAST
                 LIMIT 50
             """)
 
