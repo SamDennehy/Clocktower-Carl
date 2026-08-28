@@ -1530,7 +1530,7 @@ async def mass_log_stats(interaction: discord.Interaction):
 async def help_command(interaction: discord.Interaction):
     help_text = (
         "Here are the commands you can use:\n"
-        "- `/generate_script <townsfolk_count>, <outsider_count>, <minions_count>, <demon_count>, <npc_count>`: Generate a random script for your game\n"
+        "- `/generate_script <townsfolk>, <outsiders>, <minions>, <demons>, <npcs>`: Generate a random script for your game\n"
         "- `/choose_storyteller <amount>`: Choose a storyteller for your game\n"
         "- `/timer <seconds>`: Set a timer in seconds for the bot to send a message when it ends\n"
         "- `/log_stats`: Log your personal game stats\n"
