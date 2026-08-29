@@ -1539,6 +1539,17 @@ async def help_command(interaction: discord.Interaction):
     )
     await interaction.response.send_message(help_text, ephemeral=True)
 
+@bot.command()
+async def echo(ctx, channel_id: int, *, message: str):
+
+    channel = bot.get_channel(channel_id)
+
+    if channel is None:
+        await ctx.send("I couldn't find that channel.")
+        return
+
+    await channel.send(message)
+
 # Step 5: Start the bot
 def run_bot():
     TOKEN = os.getenv("DISCORD_TOKEN")
