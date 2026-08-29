@@ -1550,6 +1550,21 @@ async def echo(ctx, channel_id: int, *, message: str):
 
     await channel.send(message)
 
+@bot.command()
+async def joinvc(ctx, channel_id: int):
+    channel = bot.get_channel(channel_id)
+
+    if channel is None:
+        await ctx.send("I couldn't find that voice channel.")
+        return
+
+    if not isinstance(channel, discord.VoiceChannel):
+        await ctx.send("That isn't a voice channel.")
+        return
+
+    await channel.connect()
+    await ctx.send(f"Joined {channel.name}.")
+
 # Step 5: Start the bot
 def run_bot():
     TOKEN = os.getenv("DISCORD_TOKEN")
