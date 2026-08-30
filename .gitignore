@@ -4,3 +4,4 @@ __pycache__/
 scrape.py
 botc_icons/
 data/*.db
+generated_script.json
