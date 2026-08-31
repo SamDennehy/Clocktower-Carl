@@ -10,9 +10,31 @@
     <main class="app-shell">
         <section class="panel panel-left">
             <h1>Clocktower Carl Dashboard</h1>
+            <h2>Send Echo Message</h2>
+            <form action="/echo" method="POST">
+                <label for="channel_id">Channel ID:</label>
+                <input type="text" id="channel_id" name="channel_id" required>
+                <label for="message">Message:</label>
+                <textarea id="message" name="message" required></textarea>
+                <button type="submit">Send Echo</button>
+            </form>
+            <h2>Join Voice Channel</h2>
+            <form action="/join_voice" method="POST">
+                <label for="voice_channel_id">Voice Channel ID:</label>
+                <input type="text" id="voice_channel_id" name="voice_channel_id" required>
+                <button type="submit">Join Voice Channel</button>
+            </form>
+
+            <form action ="/leave_voice" method="POST">
+                <button type="submit">Leave Voice Channel</button>
+            </form>
         </section>
 
         <section class="panel panel-right">
+            <h2>Bot Logs</h2>
+            <div id="logs-container" class="log-window">
+                <!-- Logs will be dynamically inserted here -->
+            </div>
         </section>
     </main>
     <script src="{{ url_for('static', filename='scripts.js') }}"></script>

@@ -8,6 +8,7 @@ from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from psycopg_pool import ConnectionPool
 
+from logs import add_log
 
 load_dotenv()
 
@@ -86,7 +87,9 @@ def player_exists(discord_id):
 
 
 def create_player(discord_id):
-    print(f"Creating player record for Discord ID {discord_id}")
+    log_message = f"Creating player record for Discord ID {discord_id}"
+    print(log_message)
+    add_log(log_message)
     with pool.connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute(
@@ -140,14 +143,19 @@ def record_game_result(discord_id, alignment, character_type, script, result):
 
             connection.commit()
 
-    print(
+    log_message = (
         f"Recorded game result for Discord ID {discord_id}: "
         f"{alignment} {character_type} - {result} - {script_dict.get(script, script)}"
     )
 
+    print(log_message)
+    add_log(log_message)
+
 
 def get_player_stats(discord_id):
-    print(f"Fetching stats for Discord ID {discord_id}")
+    log_message = f"Fetching stats for Discord ID {discord_id}"
+    print(log_message)
+    add_log(log_message)
     with pool.connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute(
@@ -362,6 +370,8 @@ bot = commands.Bot(
     activity=discord.Game(name="Blood on the Clocktower"),
 )
 
+bot_loop = None
+
 character_emojis = {}
 synced = False
 
@@ -373,36 +383,55 @@ async def check_database():
             with connection.cursor() as cursor:
                 cursor.execute("SELECT 1")
 
-        print("Database connection OK")
+        log_message = "Database connection OK"
+        print(log_message)
+        add_log(log_message)
 
     except Exception as e:
-        print(f"Database connection check failed: {e}")
+        log_message = f"Database connection check failed: {e}"
+        print(log_message)
+        add_log(log_message)
 
 
 @bot.event
 async def on_ready():
+    global bot_loop
+    bot_loop = asyncio.get_running_loop()
+
     global character_emojis
 
+    log_message = "Bot is ready and connected to Discord."
+    print(log_message)
+    add_log(log_message)
+
     print("READY EVENT FIRED")
+    add_log("READY EVENT FIRED")
 
     print("API REQUEST: fetch_application_emojis()")
+    add_log("API REQUEST: fetch_application_emojis()")
     emojis = await bot.fetch_application_emojis()
     print(f"API RESPONSE: received {len(emojis)} application emojis")
+    add_log(f"API RESPONSE: received {len(emojis)} application emojis")
 
     character_emojis = {emoji.name: str(emoji) for emoji in emojis}
 
     print("API REQUEST: bot.tree.sync()")
+    add_log("API REQUEST: bot.tree.sync()")
     synced_commands = await bot.tree.sync()
     print(f"API RESPONSE: synced {len(synced_commands)} commands")
+    add_log(f"API RESPONSE: synced {len(synced_commands)} commands")
 
     print(f"Logged in successfully as {bot.user.name}")
+    add_log(f"Logged in successfully as {bot.user.name}")
 
     if not check_database.is_running():
         check_database.start()
 
 
 def build_download_script_and_preview(values):
-    print(f"Building download script and preview with values: {values}")
+    log_message = f"Building download script and preview with values: {values}"
+    print(log_message)
+    add_log(log_message)
     townsfolk_count = values[0]
     outsiders_count = values[1]
     minions_count = values[2]
@@ -458,9 +487,9 @@ async def generate_script(
     demon_count: int | None = None,
     npc_count: int | None = None,
 ):
-    print(
-        f"Generating script with counts - Townsfolk: {townsfolk_count}, Outsiders: {outsider_count}, Minions: {minion_count}, Demons: {demon_count}, NPCs: {npc_count}"
-    )
+    log_message = f"Generating script with counts - Townsfolk: {townsfolk_count}, Outsiders: {outsider_count}, Minions: {minion_count}, Demons: {demon_count}, NPCs: {npc_count}"
+    print(log_message)
+    add_log(log_message)
     values = [
         townsfolk_count if townsfolk_count is not None else 13,
         outsider_count if outsider_count is not None else 4,
@@ -503,7 +532,9 @@ async def generate_script(
 
         embed.set_footer(text="Carl's Script Generator")
 
-        print(f"Generated script with values: {values}")
+        log_message = f"Generated script with values: {values}"
+        print(log_message)
+        add_log(log_message)
 
         await interaction.response.send_message(embed=embed, file=discord_file)
 
@@ -521,7 +552,9 @@ async def choose_storyteller(
     names: str,
     num: int = 1,
 ):
-    print(f"Choosing {num} storytellers from names: {names}")
+    log_message = f"Choosing {num} storytellers from names: {names}"
+    print(log_message)
+    add_log(log_message)
     names = [name.strip() for name in names.split(",") if name.strip()]
 
     if num < 1:
@@ -540,7 +573,9 @@ async def choose_storyteller(
 
     chosen = sample(names, k=num)
 
-    print(f"Choosing storytellers from: {names}")
+    log_message = f"Choosing storytellers from: {names}"
+    print(log_message)
+    add_log(log_message)
 
     await interaction.response.send_message(
         "Storyteller: " + ", ".join(chosen)
@@ -808,7 +843,10 @@ class ConfirmInput(discord.ui.View):
 
 @bot.tree.command(name="log_stats", description="Log your personal game stats")
 async def log_stats(interaction: discord.Interaction):
-    print(f"Logging stats for Discord ID {interaction.user.id}")
+    log_message = f"Logging stats for Discord ID {interaction.user.id}"
+    print(log_message)
+    add_log(log_message)
+    
     await interaction.response.send_message(
         "Choose an Alignment",
         view=InputAlignment(interaction.user),
@@ -819,7 +857,9 @@ async def log_stats(interaction: discord.Interaction):
 @bot.tree.command(name="display_stats", description="Display your personal game stats")
 async def display_stats(interaction: discord.Interaction):
     discord_id = interaction.user.id
-    print(f"Displaying stats for Discord ID {discord_id}")
+    log_message = f"Displaying stats for Discord ID {discord_id}"
+    print(log_message)
+    add_log(log_message)
 
     if not player_exists(discord_id):
         await interaction.response.send_message(
@@ -890,6 +930,9 @@ async def display_stats(interaction: discord.Interaction):
     teenysville_win_rate = (teenysville_wins / teenysville_games) * 100 if teenysville_games > 0 else 0
     custom_win_rate = (custom_wins / custom_games) * 100 if custom_games > 0 else 0
     whale_buffet_win_rate = (whale_buffet_wins / whale_buffet_games) * 100 if whale_buffet_games > 0 else 0
+    log_message = f"Calculating win rates for Discord ID {interaction.user.id}"
+    print(log_message)
+    add_log(log_message)
 
     embed = discord.Embed(
         title=f"{interaction.user.name}'s Game Stats",
@@ -986,11 +1029,17 @@ async def display_stats(interaction: discord.Interaction):
         inline=True,
     )
 
+    log_message = f"Sending stats embed for Discord ID {interaction.user.id}"
+    print(log_message)
+    add_log(log_message)
+
     await interaction.response.send_message(embed=embed, ephemeral=False)
 
 
 async def create_leaderboard_embed(top_players, title, members=None):
-    print(f"Creating leaderboard embed for {title} with {len(top_players)} players")
+    log_message = f"Creating leaderboard embed for {title} with {len(top_players)} players"
+    print(log_message)
+    add_log(log_message)
     embed = discord.Embed(
         title=f"🏆 Leaderboard - {title}",
         color=discord.Color.gold(),
@@ -1030,7 +1079,9 @@ async def create_leaderboard_embed(top_players, title, members=None):
 
 
 async def get_win_leaderboard(members):
-    print("Fetching overall leaderboard...")
+    log_message = "Fetching overall leaderboard"
+    print(log_message)
+    add_log(log_message)
     with pool.connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute(
@@ -1065,7 +1116,9 @@ async def get_win_leaderboard(members):
 
     for discord_id, wins, games in candidates:
         member = members.get(discord_id)
-        print("API REQUEST: get_member() for Discord ID", discord_id)
+        log_message = f"API REQUEST: get_member() for Discord ID {discord_id}"
+        print(log_message)
+        add_log(log_message)
 
         if member is not None:
             top_players.append((discord_id, wins, games))
@@ -1077,7 +1130,9 @@ async def get_win_leaderboard(members):
 
 
 async def get_good_leaderboard(members):
-    print("Fetching good leaderboard...")
+    log_message = "Fetching good leaderboard"
+    print(log_message)
+    add_log(log_message)
     with pool.connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute(
@@ -1105,7 +1160,9 @@ async def get_good_leaderboard(members):
     top_players = []
 
     for discord_id, wins, games in candidates:
-        print("API REQUEST: get_member() for Discord ID", discord_id)
+        log_message = f"API REQUEST: get_member() for Discord ID {discord_id}"
+        print(log_message)
+        add_log(log_message)
         member = members.get(discord_id)
 
         if member is not None:
@@ -1118,7 +1175,9 @@ async def get_good_leaderboard(members):
 
 
 async def get_evil_leaderboard(members):
-    print("Fetching evil leaderboard...")
+    log_message = "Fetching evil leaderboard"
+    print(log_message)
+    add_log(log_message)
     with pool.connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute(
@@ -1145,7 +1204,9 @@ async def get_evil_leaderboard(members):
     top_players = []
 
     for discord_id, wins, games in candidates:
-        print("API REQUEST: get_member() for Discord ID", discord_id)
+        log_message = f"API REQUEST: get_member() for Discord ID {discord_id}"
+        print(log_message)
+        add_log(log_message)
         member = members.get(discord_id)
 
         if member is not None:
@@ -1186,6 +1247,9 @@ class LeaderboardView(discord.ui.View):
             return
 
         choice = select.values[0]
+        log_message = f"Selected leaderboard: {choice}"
+        print(log_message)
+        add_log(log_message)
 
         if choice == "overall":
             top_players = await get_win_leaderboard(self.members)
@@ -1198,8 +1262,17 @@ class LeaderboardView(discord.ui.View):
             top_players = await get_evil_leaderboard(self.members)
             title = "Top 10 Players by Evil Win Rate (minimum 5 games)"
 
-        print("CHOICE:", choice)
-        print("TOP PLAYERS:", top_players)
+        log_message = f"Creating leaderboard embed for {title} with {len(top_players)} players"
+        print(log_message)
+        add_log(log_message)
+
+        log_message = f"CHOICE: {choice}"
+        print(log_message)
+        add_log(log_message)
+
+        log_message = f"TOP PLAYERS: {top_players}"
+        print(log_message)
+        add_log(log_message)
 
         if not top_players:
             await interaction.response.edit_message(
@@ -1219,7 +1292,9 @@ class LeaderboardView(discord.ui.View):
     description="Display the top 10 players in the server by win rate",
 )
 async def leaderboard(interaction: discord.Interaction):
-    print(f"Displaying leaderboard for Discord ID {interaction.user.id}")
+    log_message = f"Displaying leaderboard for Discord ID {interaction.user.id}"
+    print(log_message)
+    add_log(log_message)
     members = {member.id: member for member in interaction.guild.members}
 
     top_players = await get_win_leaderboard(members)
@@ -1249,7 +1324,9 @@ async def leaderboard(interaction: discord.Interaction):
     description="Set a timer in seconds for the bot to send a message when it ends",
 )
 async def timer(interaction: discord.Interaction, seconds: int):
-    print(f"Setting timer for {seconds} seconds for Discord ID {interaction.user.id}")
+    log_message = f"Setting timer for {seconds} seconds for Discord ID {interaction.user.id}"
+    print(log_message)
+    add_log(log_message)
     await interaction.response.send_message(
         f"Timer set for {seconds} seconds.",
         ephemeral=False,
@@ -1271,7 +1348,9 @@ class JSONModal(discord.ui.Modal, title="Import BOTC JSON"):
     )
 
     async def on_submit(self, interaction: discord.Interaction):
-        print(f"Submitting JSON for Discord ID {interaction.user.id}")
+        log_message = f"Submitting JSON for Discord ID {interaction.user.id}"
+        print(log_message)
+        add_log(log_message)
         if interaction.user != self.user:
             await interaction.response.send_message(
                 "This menu isn't for you.",
@@ -1447,7 +1526,9 @@ class ConfirmMassInput(discord.ui.View):
 
 
 async def mass_log_stats(interaction: discord.Interaction):
-    print(f"Logging mass stats for Discord ID {interaction.user.id}")
+    log_message = f"Logging mass stats for Discord ID {interaction.user.id}"
+    print(log_message)
+    add_log(log_message)
     await interaction.response.send_modal(JSONModal(interaction.user))
 
 
@@ -1468,50 +1549,104 @@ async def help_command(interaction: discord.Interaction):
     await interaction.response.send_message(help_text, ephemeral=True)
 
 
-@bot.command()
-async def echo(ctx, channel_id: int, *, message: str):
+async def send_message_to_channel(channel_id: int, message: str):
     channel = bot.get_channel(channel_id)
 
     if channel is None:
-        await ctx.send("I couldn't find that channel.")
-        return
+        log_message = f"Channel with ID {channel_id} not found."
+        print(log_message)
+        add_log(log_message)
+        return False
 
-    await channel.send(message)
+    try:
+        await channel.send(message)
+        return True
+    except discord.DiscordException as e:
+        log_message = f"Failed to send message to channel ID {channel_id}: {e}"
+        print(log_message)
+        add_log(log_message)
+        return False
+
+@bot.command()
+async def echo(ctx, channel_id: int, *, message: str):
+    success = await send_message_to_channel(channel_id, message)
+
+    if not success:
+        await ctx.send("I couldn't find that channel.")
+    else:
+        await ctx.send(f"Echoed message to channel ID: {channel_id}.")
+
+async def join_voice_channel(channel_id: int):
+    channel = bot.get_channel(channel_id)
+
+    if channel is None:
+        log_message = f"Channel with ID {channel_id} not found."
+        print(log_message)
+        add_log(log_message)
+        return False
+
+    if not isinstance(channel, discord.VoiceChannel):
+        log_message = f"Channel with ID {channel_id} is not a voice channel."
+        print(log_message)
+        add_log(log_message)
+        return False
+
+    await channel.connect()
+    return True
 
 @bot.command()
 async def joinvc(ctx, channel_id: int):
+    success = await join_voice_channel(channel_id)
+
+    if not success:
+        await ctx.send("I couldn't join that voice channel.")
+    else:
+        await ctx.send(f"Joined channel ID: {channel_id}.")
+
+async def leave_voice_channel(channel_id: int):
     channel = bot.get_channel(channel_id)
 
     if channel is None:
-        await ctx.send("I couldn't find that voice channel.")
-        return
+        log_message = f"Channel with ID {channel_id} not found."
+        print(log_message)
+        add_log(log_message)
+        return False
 
     if not isinstance(channel, discord.VoiceChannel):
-        await ctx.send("That isn't a voice channel.")
-        return
+        log_message = f"Channel with ID {channel_id} is not a voice channel."
+        print(log_message)
+        add_log(log_message)
+        return False
 
-    await channel.connect()
-    await ctx.send(f"Joined {channel.name}.")
+    voice_client = discord.utils.get(bot.voice_clients, guild=channel.guild)
 
+    if voice_client is None:
+        log_message = f"Bot is not connected to any voice channel in guild {channel.guild.name}."
+        print(log_message)
+        add_log(log_message)
+        return False
+
+    await voice_client.disconnect()
+    return True
+
+@bot.command()
+async def leavevc(ctx, channel_id: int):
+    success = await leave_voice_channel(channel_id)
+
+    if not success:
+        await ctx.send("I couldn't leave that voice channel.")
+    else:
+        await ctx.send(f"Left channel ID: {channel_id}.")
 
 def run_bot():
     TOKEN = os.getenv("DISCORD_TOKEN")
 
     if not TOKEN:
-        print("ERROR: DISCORD_TOKEN environment variable is not set!")
+        log_message = "ERROR: DISCORD_TOKEN environment variable is not set!"
+        print(log_message)
+        add_log(log_message)
 
-    print("Starting Discord bot...")
+    log_message = "Starting Discord bot..."
+    print(log_message)
+    add_log(log_message)
     bot.run(TOKEN)
-
-
-__all__ = [
-    "bot",
-    "run_bot",
-    "pool",
-    "player_exists",
-    "create_player",
-    "record_game_result",
-    "get_player_stats",
-    "script_dict",
-    "characters",
-]

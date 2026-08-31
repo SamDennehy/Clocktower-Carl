@@ -17,11 +17,11 @@ h1 {
   animation: color-change 0.2s infinite;
 }
 
-@keyframes color-change {
+/*@keyframes color-change {
   0% { color: red; text-shadow: 2px 2px 2px yellow; }
   50% { color: yellow; text-shadow: 2px 2px 2px red; }
   100% { color: red; text-shadow: 2px 2px 2px yellow; }
-}
+}*/
 
 .app-shell {
 	min-height: 100vh;
@@ -162,4 +162,10 @@ h1 {
 	.preview-role-grid {
 		grid-template-columns: 1fr;
 	}
+}
+
+.log-window {
+    height: 400px;
+    overflow-y: auto;
+    font-family: monospace;
 }
