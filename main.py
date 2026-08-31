@@ -11,6 +11,10 @@ bot_thread = None
 bot_thread_lock = threading.Lock()
 
 
+def is_bot_ready():
+    return bot is not None and bot.bot_loop is not None and bot.is_ready()
+
+
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -28,7 +32,7 @@ def echo():
     message = request.form['message']
     channel_id = int(request.form['channel_id'])
 
-    if bot.bot_loop is None:
+    if not is_bot_ready():
         return "Bot is not ready yet.", 503
 
     future = asyncio.run_coroutine_threadsafe(
@@ -48,7 +52,7 @@ def join_voice():
     voice_channel_id = int(request.form['voice_channel_id'])
     add_log(f"Attempting to join voice channel ID: {voice_channel_id}.")
 
-    if bot.bot_loop is None:
+    if not is_bot_ready():
         add_log("Bot is not ready yet.")
         return "Bot is not ready yet.", 503
 
@@ -66,6 +70,9 @@ def join_voice():
 
 @app.route('/leave_voice', methods=['POST'])
 def leave_voice():
+    if not is_bot_ready():
+        return "Bot is not ready yet.", 503
+
     future = asyncio.run_coroutine_threadsafe(
         bot.leave_voice_channel(),
         bot.bot_loop
