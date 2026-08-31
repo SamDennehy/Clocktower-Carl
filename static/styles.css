@@ -6,7 +6,7 @@ body {
 body {
 	margin: 0;
 	font-family: Arial, sans-serif;
-	background-image: url(https://static.vecteezy.com/system/resources/previews/028/148/065/non_2x/poker-card-repeat-pattern-seamless-casino-background-with-card-suits-clubs-hearts-spades-and-diamonds-with-white-outline-vector.jpg);
+	background-color: rgba(163, 73, 164);
 	color: #f5f7fa;
     text-shadow: 2px 2px 2px #111;
 }
@@ -168,4 +168,28 @@ h1 {
     height: 400px;
     overflow-y: auto;
     font-family: monospace;
+	background-color: rgba(0, 0, 0, 0.5);
+	padding: 1rem;
+	border-radius: 10px;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+form {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+button {
+	padding: 0.5rem 1rem;
+	border: none;
+	border-radius: 5px;
+	background-color: rgb(128, 47, 128);
+	color: #ffffff;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+button:hover {
+	background-color: rgb(97, 31, 97);
 }
