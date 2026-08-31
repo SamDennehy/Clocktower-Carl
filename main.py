@@ -5,9 +5,10 @@ from flask import Flask, render_template, request
 
 import bot
 from logs import get_logs, add_log
-    
 
 app = Flask(__name__)
+bot_thread = None
+bot_thread_lock = threading.Lock()
 
 
 @app.route('/')
@@ -81,13 +82,22 @@ def start_bot():
     bot.run_bot()
 
 
-bot_thread = threading.Thread(target=start_bot, daemon=True)
-bot_thread.start()
+def ensure_bot_started():
+    global bot_thread
 
-#if __name__ == '__main__':
-    # Start the bot in a separate thread
-    #bot_thread = threading.Thread(target=start_bot, daemon=True)
-    #bot_thread.start()
+    if bot_thread and bot_thread.is_alive():
+        return
 
-    # Start the Flask app
-    #app.run(debug=True)
+    with bot_thread_lock:
+        if bot_thread and bot_thread.is_alive():
+            return
+
+        bot_thread = threading.Thread(target=start_bot, daemon=True, name="discord-bot")
+        bot_thread.start()
+
+
+ensure_bot_started()
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
