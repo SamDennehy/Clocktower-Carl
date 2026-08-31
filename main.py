@@ -81,13 +81,13 @@ def start_bot():
     bot.run_bot()
 
 
-#bot_thread = threading.Thread(target=start_bot, daemon=True)
-#bot_thread.start()
+bot_thread = threading.Thread(target=start_bot, daemon=True)
+bot_thread.start()
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
     # Start the bot in a separate thread
-    bot_thread = threading.Thread(target=start_bot, daemon=True)
-    bot_thread.start()
+    #bot_thread = threading.Thread(target=start_bot, daemon=True)
+    #bot_thread.start()
 
     # Start the Flask app
-    app.run(debug=True)
+    #app.run(debug=True)
