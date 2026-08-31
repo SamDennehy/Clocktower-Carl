@@ -1546,8 +1546,4 @@ def run_bot():
     if not TOKEN:
         add_log("ERROR: DISCORD_TOKEN environment variable is not set!")
     add_log("Starting Discord bot...")
-    try:
-        bot.run(TOKEN)
-    finally:
-        pool.close()
-        print("Database pool closed.")
+    bot.run(TOKEN)
