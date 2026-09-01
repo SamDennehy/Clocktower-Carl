@@ -5,8 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clocktower Carl Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='carl.ico') }}">
 </head>
 <body>
+    <header class="banner">
+        <img src="{{ url_for('static', filename='carl_banner.png') }}" alt="Clocktower Carl Banner">
+    </header>
     <main class="app-shell">
         <section class="panel panel-left">
             <h1>Clocktower Carl Dashboard</h1>

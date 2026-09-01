@@ -1,6 +1,7 @@
 html,
 body {
 	height: 100%;
+	margin: 0;
 }
 
 body {
@@ -9,6 +10,23 @@ body {
 	background-color: rgba(163, 73, 164);
 	color: #f5f7fa;
     text-shadow: 2px 2px 2px #111;
+	display: flex;
+	flex-direction: column;
+}
+
+.banner {
+	width: 100%;
+	background-color: #000;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
+}
+
+.banner img {
+	width: 100%;
+	height: auto;
+	display: block;
 }
 
 h1 {
@@ -24,9 +42,9 @@ h1 {
 }*/
 
 .app-shell {
-	min-height: 100vh;
 	display: grid;
 	grid-template-columns: 1fr 1fr;
+	flex: 1;
 }
 
 .panel {
