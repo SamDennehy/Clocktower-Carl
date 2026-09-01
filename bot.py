@@ -26,67 +26,110 @@ load_dotenv()
 def reconnect_failed(pool):
     add_log(f"DATABASE RECONNECT FAILED: {pool.get_stats()}")
 
-pool = ConnectionPool(
-    conninfo=os.getenv("DATABASE_URL"),
-    min_size=1,
-    max_size=5,
-    max_idle=300,
-    max_lifetime=300,
-    reconnect_timeout=300,
-    reconnect_failed=reconnect_failed,
-    check=ConnectionPool.check_connection,
-)
 
-with pool.connection() as connection:
-    with connection.cursor() as cursor:
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS player_stats (
-                discord_id BIGINT PRIMARY KEY,
+def create_database_pool():
+    return ConnectionPool(
+        conninfo=os.getenv("DATABASE_URL"),
+        min_size=1,
+        max_size=5,
+        max_idle=300,
+        max_lifetime=300,
+        reconnect_timeout=300,
+        reconnect_failed=reconnect_failed,
+        check=ConnectionPool.check_connection,
+    )
 
-                townsfolk_games INTEGER DEFAULT 0,
-                townsfolk_wins INTEGER DEFAULT 0,
 
-                outsider_games INTEGER DEFAULT 0,
-                outsider_wins INTEGER DEFAULT 0,
+def initialize_database_schema():
+    active_pool = getattr(pool, "_pool", pool)
+    with active_pool.connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS player_stats (
+                    discord_id BIGINT PRIMARY KEY,
 
-                traveller_good_games INTEGER DEFAULT 0,
-                traveller_good_wins INTEGER DEFAULT 0,
+                    townsfolk_games INTEGER DEFAULT 0,
+                    townsfolk_wins INTEGER DEFAULT 0,
 
-                traveller_evil_games INTEGER DEFAULT 0,
-                traveller_evil_wins INTEGER DEFAULT 0,
+                    outsider_games INTEGER DEFAULT 0,
+                    outsider_wins INTEGER DEFAULT 0,
 
-                minion_games INTEGER DEFAULT 0,
-                minion_wins INTEGER DEFAULT 0,
+                    traveller_good_games INTEGER DEFAULT 0,
+                    traveller_good_wins INTEGER DEFAULT 0,
 
-                demon_games INTEGER DEFAULT 0,
-                demon_wins INTEGER DEFAULT 0,
+                    traveller_evil_games INTEGER DEFAULT 0,
+                    traveller_evil_wins INTEGER DEFAULT 0,
 
-                trouble_brewing_games INTEGER DEFAULT 0,
-                trouble_brewing_wins INTEGER DEFAULT 0,
+                    minion_games INTEGER DEFAULT 0,
+                    minion_wins INTEGER DEFAULT 0,
 
-                bad_moon_rising_games INTEGER DEFAULT 0,
-                bad_moon_rising_wins INTEGER DEFAULT 0,
+                    demon_games INTEGER DEFAULT 0,
+                    demon_wins INTEGER DEFAULT 0,
 
-                sects_and_violets_games INTEGER DEFAULT 0,
-                sects_and_violets_wins INTEGER DEFAULT 0,
+                    trouble_brewing_games INTEGER DEFAULT 0,
+                    trouble_brewing_wins INTEGER DEFAULT 0,
 
-                teenysville_games INTEGER DEFAULT 0,
-                teenysville_wins INTEGER DEFAULT 0,
+                    bad_moon_rising_games INTEGER DEFAULT 0,
+                    bad_moon_rising_wins INTEGER DEFAULT 0,
 
-                custom_games INTEGER DEFAULT 0,
-                custom_wins INTEGER DEFAULT 0,
+                    sects_and_violets_games INTEGER DEFAULT 0,
+                    sects_and_violets_wins INTEGER DEFAULT 0,
 
-                total_games INTEGER DEFAULT minion_games + demon_games + traveller_evil_games + townsfolk_games + outsider_games + traveller_good_games,
-                total_wins INTEGER DEFAULT minion_wins + demon_wins + traveller_evil_wins + townsfolk_wins + outsider_wins + traveller_good_wins,
+                    teenysville_games INTEGER DEFAULT 0,
+                    teenysville_wins INTEGER DEFAULT 0,
 
-                whale_buffet_games INTEGER DEFAULT 0,
-                whale_buffet_wins INTEGER DEFAULT 0
+                    custom_games INTEGER DEFAULT 0,
+                    custom_wins INTEGER DEFAULT 0,
+
+                    total_games INTEGER DEFAULT minion_games + demon_games + traveller_evil_games + townsfolk_games + outsider_games + traveller_good_games,
+                    total_wins INTEGER DEFAULT minion_wins + demon_wins + traveller_evil_wins + townsfolk_wins + outsider_wins + traveller_good_wins,
+
+                    whale_buffet_games INTEGER DEFAULT 0,
+                    whale_buffet_wins INTEGER DEFAULT 0
+                )
+                """
             )
-            """
-        )
 
-        connection.commit()
+            connection.commit()
+
+
+class DatabasePoolWrapper:
+    def __init__(self):
+        self._pool = create_database_pool()
+
+    def reset(self):
+        try:
+            if hasattr(self._pool, "close"):
+                self._pool.close()
+        except Exception as exc:
+            add_log(f"Database pool close failed during reset: {exc}")
+
+        self._pool = create_database_pool()
+        initialize_database_schema()
+
+    def connection(self, *args, **kwargs):
+        try:
+            return self._pool.connection(*args, **kwargs)
+        except Exception as exc:
+            add_log(f"Database connection failed; resetting pool: {exc}")
+            self.reset()
+            return self._pool.connection(*args, **kwargs)
+
+    def __getattr__(self, name):
+        return getattr(self._pool, name)
+
+
+def reset_database_pool():
+    global pool
+    if hasattr(pool, "reset"):
+        pool.reset()
+    else:
+        pool = DatabasePoolWrapper()
+
+
+pool = DatabasePoolWrapper()
+initialize_database_schema()
 
 
 def player_exists(discord_id):
@@ -395,6 +438,7 @@ async def check_database():
         add_log("Database connection OK")
     except Exception as e:
         add_log(f"Database connection check failed: {e}")
+        reset_database_pool()
 @bot.event
 async def on_ready():
     global bot_loop
