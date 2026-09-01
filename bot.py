@@ -1500,9 +1500,20 @@ async def join_voice_channel(channel_id: int):
         add_log(f"Channel with ID {channel_id} is not a voice channel.")
         return False
 
-    await channel.connect()
-    add_log(f"Joined voice channel ID {channel_id}.")
-    return True
+    # Leave any voice channel the bot is currently in
+    for voice_client in bot.voice_clients:
+        if voice_client.is_connected():
+            add_log(f"Leaving current voice channel: {voice_client.channel.name}")
+            await voice_client.disconnect()
+
+    try:
+        await channel.connect()
+        add_log(f"Joined voice channel ID {channel_id}.")
+        return True
+
+    except discord.DiscordException as e:
+        add_log(f"Failed to join voice channel: {e}")
+        return False
 
 @bot.command()
 async def joinvc(ctx, channel_id: int):
@@ -1514,16 +1525,24 @@ async def joinvc(ctx, channel_id: int):
         await ctx.send(f"Joined channel ID: {channel_id}.")
 
 async def leave_voice_channel():
-    voice_client = discord.utils.get(bot.voice_clients, guild=bot.guilds[0])
+    print("Guilds:", bot.guilds)
+    print("Voice clients:", bot.voice_clients)
 
-    if voice_client is None:
-        add_log("Bot is not currently in a voice channel.")
+    for vc in bot.voice_clients:
+        print("Voice client guild:", vc.guild)
+        print("Voice channel:", vc.channel)
+
+    if not bot.voice_clients:
+        add_log("No voice clients found.")
         return False
+
+    voice_client = bot.voice_clients[0]
 
     try:
         await voice_client.disconnect()
         add_log("Bot left the voice channel.")
         return True
+
     except discord.DiscordException as e:
         add_log(f"Failed to leave voice channel: {e}")
         return False
