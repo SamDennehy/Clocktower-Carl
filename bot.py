@@ -25,9 +25,9 @@ load_dotenv()
 pool = ConnectionPool(
     conninfo=os.getenv("DATABASE_URL"),
     min_size=1,
-    max_size=1,
-    max_lifetime=0,
-    max_idle=300,
+    max_size=10,
+    max_lifetime=3600,
+    max_idle=180,
     reconnect_timeout=30,
 )
 
