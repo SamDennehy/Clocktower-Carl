@@ -23,13 +23,18 @@ def get_logs():
 
 load_dotenv()
 
+def reconnect_failed(pool):
+    add_log(f"DATABASE RECONNECT FAILED: {pool.get_stats()}")
+
 pool = ConnectionPool(
     conninfo=os.getenv("DATABASE_URL"),
     min_size=1,
-    max_size=10,
+    max_size=5,
+    max_idle=300,
     max_lifetime=3600,
-    max_idle=180,
-    reconnect_timeout=30,
+    reconnect_timeout=300,
+    reconnect_failed=reconnect_failed,
+    check=ConnectionPool.check_connection,
 )
 
 with pool.connection() as connection:
