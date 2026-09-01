@@ -9,11 +9,12 @@
 </head>
 <body>
     <header class="banner">
-        <img src="{{ url_for('static', filename='carl_banner.png') }}" alt="Clocktower Carl Banner">
+        <img src="{{ url_for('static', filename='carl.png') }}" alt="Clocktower Carl Banner">
+        <h1>Clocktower Carl Dashboard</h1>
+        <img src="{{ url_for('static', filename='carl.png') }}" alt="Clocktower Carl Banner">
     </header>
     <main class="app-shell">
         <section class="panel panel-left">
-            <h1>Clocktower Carl Dashboard</h1>
             <h2>Send Echo Message</h2>
             <form action="/echo" method="POST" id="echo-form">
                 <label for="channel_id">Channel ID:</label>
