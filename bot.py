@@ -8,7 +8,14 @@ from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from psycopg_pool import ConnectionPool
 
-from logs import add_log
+logs = []
+
+def add_log(message):
+    logs.append(message)
+    print(message)
+
+def get_logs():
+    return logs
 
 load_dotenv()
 

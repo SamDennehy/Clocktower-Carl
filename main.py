@@ -4,13 +4,11 @@ import time
 
 from flask import Flask, render_template, request
 
-import bot
-from logs import get_logs, add_log
+from bot import bot, add_log, get_logs
 
 app = Flask(__name__)
 bot_thread = None
 bot_thread_lock = threading.Lock()
-
 
 def is_bot_ready():
     return bot is not None and bot.bot_loop is not None and bot.is_ready()
