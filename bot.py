@@ -9,6 +9,7 @@ import discord
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from psycopg_pool import ConnectionPool
+from psycopg import Connection
 import edge_tts
 
 logs = []
@@ -22,13 +23,17 @@ def get_logs():
 
 load_dotenv()
 
+def check_connection(conn: Connection):
+    conn.execute("SELECT 1")
+
 pool = ConnectionPool(
     conninfo=os.getenv("DATABASE_URL"),
     min_size=1,
-    max_size=10,
-    max_lifetime=3600,
-    max_idle=180,
+    max_size=5,
+    max_idle=60,
+    max_lifetime=1800,
     reconnect_timeout=30,
+    check=check_connection,
 )
 
 with pool.connection() as connection:
