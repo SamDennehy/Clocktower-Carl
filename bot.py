@@ -1516,6 +1516,10 @@ async def joinvc(ctx, channel_id: int):
 async def leave_voice_channel():
     voice_client = discord.utils.get(bot.voice_clients, guild=bot.guilds[0])
 
+    if voice_client is None:
+        add_log("Bot is not currently in a voice channel.")
+        return False
+
     try:
         await voice_client.disconnect()
         add_log("Bot left the voice channel.")
