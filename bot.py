@@ -23,10 +23,12 @@ def get_logs():
 load_dotenv()
 
 pool = ConnectionPool(
-    os.getenv("DATABASE_URL"),
+    conninfo=os.getenv("DATABASE_URL"),
     min_size=1,
     max_size=5,
-    max_lifetime=300,
+    max_lifetime=0,
+    max_idle=300,
+    reconnect_timeout=30,
 )
 
 with pool.connection() as connection:
