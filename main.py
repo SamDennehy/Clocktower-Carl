@@ -17,19 +17,6 @@ bot_thread = None
 bot_thread_lock = threading.Lock()
 
 
-def is_bot_ready():
-    return bot is not None and getattr(bot, "bot_loop", None) is not None and bot.is_ready()
-
-
-def wait_for_bot_ready(timeout_seconds=15, poll_interval=0.5):
-    deadline = time.monotonic() + timeout_seconds
-    while time.monotonic() < deadline:
-        if is_bot_ready():
-            return True
-        time.sleep(poll_interval)
-    return is_bot_ready()
-
-
 @app.before_request
 def start_bot_for_request():
     ensure_bot_started()
@@ -52,9 +39,6 @@ def echo():
     message = request.form['message']
     channel_id = int(request.form['channel_id'])
 
-    if not wait_for_bot_ready():
-        return "Bot is still starting up. Please try again in a few seconds.", 503
-
     if getattr(bot, "bot_loop", None) is None:
         return "Discord bot loop is not available yet.", 503
 
@@ -75,10 +59,6 @@ def join_voice():
     voice_channel_id = int(request.form['voice_channel_id'])
     add_log(f"Attempting to join voice channel ID: {voice_channel_id}.")
 
-    if not wait_for_bot_ready():
-        add_log("Bot is still starting up. Please try again in a few seconds.")
-        return "Bot is still starting up. Please try again in a few seconds.", 503
-
     if getattr(bot, "bot_loop", None) is None:
         return "Discord bot loop is not available yet.", 503
 
@@ -96,8 +76,6 @@ def join_voice():
 
 @app.route('/leave_voice', methods=['POST'])
 def leave_voice():
-    if not wait_for_bot_ready():
-        return "Bot is still starting up. Please try again in a few seconds.", 503
 
     if getattr(bot, "bot_loop", None) is None:
         return "Discord bot loop is not available yet.", 503

@@ -1514,17 +1514,12 @@ async def joinvc(ctx, channel_id: int):
         await ctx.send(f"Joined channel ID: {channel_id}.")
 
 async def leave_voice_channel():
-    if not bot.voice_clients:
-        add_log("Bot is not connected to a voice channel.")
-        return False
-
-    voice_client = bot.voice_clients[0]
+    voice_client = discord.utils.get(bot.voice_clients, guild=bot.guilds[0])
 
     try:
         await voice_client.disconnect()
         add_log("Bot left the voice channel.")
         return True
-
     except discord.DiscordException as e:
         add_log(f"Failed to leave voice channel: {e}")
         return False
