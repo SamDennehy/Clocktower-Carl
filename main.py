@@ -4,7 +4,13 @@ import time
 
 from flask import Flask, render_template, request
 
-from bot import bot, add_log, get_logs
+import bot
+
+def add_log(message):
+    bot.add_log(message)
+
+def get_logs():
+    return bot.get_logs()
 
 app = Flask(__name__)
 bot_thread = None
