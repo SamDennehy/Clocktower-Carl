@@ -30,9 +30,9 @@ pool = ConnectionPool(
     conninfo=os.getenv("DATABASE_URL"),
     min_size=1,
     max_size=5,
-    max_idle=60,
-    max_lifetime=1800,
-    reconnect_timeout=30,
+    max_idle=300,
+    max_lifetime=3600,
+    reconnect_timeout=300,
     check=check_connection,
 )
 
