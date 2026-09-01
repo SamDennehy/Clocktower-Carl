@@ -92,6 +92,25 @@ def leave_voice():
 
     return f"Left voice channel successfully.", 204
 
+@app.route('/tts', methods=['POST'])
+def tts():
+    text = request.form['text']
+
+    if getattr(bot, "bot_loop", None) is None:
+        return "Discord bot loop is not available yet.", 503
+
+    future = asyncio.run_coroutine_threadsafe(
+        bot.tts_speak(text),
+        bot.bot_loop
+    )
+
+    success = future.result()
+
+    if not success:
+        return f"Failed to generate TTS for text: {text}.", 400
+
+    return f"TTS generated successfully for text: {text}.", 204
+
 def start_bot():
     print("STARTING DISCORD BOT THREAD", flush=True)
 
@@ -119,4 +138,4 @@ def ensure_bot_started():
 
 if __name__ == '__main__':
     ensure_bot_started()
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)

@@ -2,16 +2,19 @@ import asyncio
 import json
 import os
 from random import sample
+import time
+import tempfile
 
 import discord
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from psycopg_pool import ConnectionPool
+import edge_tts
 
 logs = []
 
 def add_log(message):
-    logs.append(message)
+    logs.append(f"{message} {time.strftime('%Y-%m-%d %H:%M:%S')}")
     print(message)
 
 def get_logs():
@@ -1555,6 +1558,81 @@ async def leavevc(ctx):
         await ctx.send("I couldn't leave that voice channel.")
     else:
         await ctx.send("Left the voice channel.")
+
+async def generate_tts(text):
+    """Generate TTS audio file in a unique temp file"""
+    with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
+        temp_path = tmp.name
+    
+    communicate = edge_tts.Communicate(text, "en-IE-ConnorNeural")
+    await communicate.save(temp_path)
+    return temp_path
+
+async def tts_speak(text: str):
+    if not bot.voice_clients:
+        add_log("Bot is not connected to a voice channel.")
+        return False
+
+    voice_client = bot.voice_clients[0]
+
+    if not voice_client.is_connected():
+        add_log("Voice client is not connected.")
+        return False
+
+    temp_audio_file = None
+    try:
+        add_log(f"Generating TTS for text: {text}")
+
+        temp_audio_file = await generate_tts(text)
+        add_log(f"Audio file generated: {temp_audio_file}")
+
+        # discord.py will find FFmpeg in PATH (works on all platforms)
+        audio_source = discord.FFmpegPCMAudio(temp_audio_file)
+
+        add_log("Starting audio playback.")
+
+        def cleanup_audio(error):
+            try:
+                if temp_audio_file and os.path.exists(temp_audio_file):
+                    os.remove(temp_audio_file)
+                    add_log(f"Cleaned up temp audio file: {temp_audio_file}")
+            except Exception as cleanup_err:
+                add_log(f"Cleanup error: {cleanup_err}")
+            if error:
+                add_log(f"Audio playback finished with error: {error}")
+
+        voice_client.play(audio_source, after=cleanup_audio)
+
+        while voice_client.is_playing():
+            await asyncio.sleep(0.5)
+
+        add_log(f"Spoke text: {text}")
+        return True
+
+    except Exception as e:
+        add_log(f"TTS ERROR: {type(e).__name__}: {e}")
+
+        import traceback
+        traceback.print_exc()
+
+        # Clean up temp file on error
+        if temp_audio_file:
+            try:
+                if os.path.exists(temp_audio_file):
+                    os.remove(temp_audio_file)
+            except:
+                pass
+
+        return False
+
+@bot.command()
+async def tts(ctx, *, text: str):
+    success = await tts_speak(text)
+
+    if not success:
+        await ctx.send("I couldn't speak that text.")
+    else:
+        await ctx.send(f"Spoke text: {text}")
 
 def run_bot():
     TOKEN = os.getenv("DISCORD_TOKEN")

@@ -30,6 +30,13 @@
             <form action ="/leave_voice" method="POST" id="leave-voice-form">
                 <button type="submit">Leave Voice Channel</button>
             </form>
+            <br>
+            <h2>Send TTS Message</h2>
+            <form action="/tts" method="POST" id="tts-form">
+                <label for="tts-text">Text to speak:</label>
+                <textarea id="tts-text" name="text" required></textarea>
+                <button type="submit">Send TTS</button>
+            </form>
         </section>
         <section class="panel panel-right">
             <h2>Bot Logs</h2>

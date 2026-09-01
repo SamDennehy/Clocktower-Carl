@@ -5,3 +5,4 @@ scrape.py
 botc_icons/
 data/*.db
 generated_script.json
+speech.mp3
