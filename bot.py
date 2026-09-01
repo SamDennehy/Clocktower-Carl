@@ -596,7 +596,6 @@ class InputAlignment(discord.ui.View):
                 ephemeral=True,
             )
 
-
 class InputGoodType(discord.ui.View):
     def __init__(self, user, alignment):
         super().__init__()
@@ -633,7 +632,6 @@ class InputGoodType(discord.ui.View):
             ephemeral=True,
         )
 
-
 class InputEvilType(discord.ui.View):
     def __init__(self, user, alignment):
         super().__init__()
@@ -669,7 +667,6 @@ class InputEvilType(discord.ui.View):
             view=InputScript(self.user, self.alignment, choice, False, None),
             ephemeral=True,
         )
-
 
 class InputScript(discord.ui.View):
     def __init__(self, user, alignment, character_type, massBool, discord_id_role_dict):
@@ -720,7 +717,6 @@ class InputScript(discord.ui.View):
             ephemeral=True,
         )
 
-
 class InputResults(discord.ui.View):
     def __init__(self, user, alignment, character_type, script):
         super().__init__()
@@ -757,7 +753,6 @@ class InputResults(discord.ui.View):
             view=ConfirmInput(self.user, self.alignment, self.character_type, self.script, result),
             ephemeral=True,
         )
-
 
 class ConfirmInput(discord.ui.View):
     def __init__(self, user, alignment, character_type, script, result):
@@ -1081,7 +1076,6 @@ async def get_win_leaderboard(members):
 
     return top_players
 
-
 async def get_good_leaderboard(members):
     add_log("Fetching good leaderboard")
     with pool.connection() as connection:
@@ -1121,7 +1115,6 @@ async def get_good_leaderboard(members):
             break
 
     return top_players
-
 
 async def get_evil_leaderboard(members):
     add_log("Fetching evil leaderboard")
@@ -1313,7 +1306,6 @@ class JSONModal(discord.ui.Modal, title="Import BOTC JSON"):
             ephemeral=True,
         )
 
-
 class Player:
     def __init__(self, discord_id, alignment, character_type, script, result):
         self.discord_id = discord_id
@@ -1321,7 +1313,6 @@ class Player:
         self.character_type = character_type
         self.script = script
         self.result = result
-
 
 class InputMassResults(discord.ui.View):
     def __init__(self, user, discord_id_role_dict, script):
@@ -1552,5 +1543,7 @@ def run_bot():
 
     if not TOKEN:
         add_log("ERROR: DISCORD_TOKEN environment variable is not set!")
+        return
+    
     add_log("Starting Discord bot...")
     bot.run(TOKEN)

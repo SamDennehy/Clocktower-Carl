@@ -100,7 +100,14 @@ def leave_voice():
     return f"Left voice channel successfully.", 204
 
 def start_bot():
-    bot.run_bot()
+    print("STARTING DISCORD BOT THREAD", flush=True)
+
+    try:
+        bot.run_bot()
+    except Exception as e:
+        print(f"DISCORD BOT THREAD CRASHED: {e}", flush=True)
+        import traceback
+        traceback.print_exc()
 
 
 def ensure_bot_started():
