@@ -16,8 +16,9 @@ app = Flask(__name__)
 bot_thread = None
 bot_thread_lock = threading.Lock()
 
+
 def is_bot_ready():
-    return bot is not None and bot.bot_loop is not None and bot.is_ready()
+    return bot is not None and getattr(bot, "bot_loop", None) is not None and bot.is_ready()
 
 
 def wait_for_bot_ready(timeout_seconds=15, poll_interval=0.5):
@@ -27,6 +28,11 @@ def wait_for_bot_ready(timeout_seconds=15, poll_interval=0.5):
             return True
         time.sleep(poll_interval)
     return is_bot_ready()
+
+
+@app.before_request
+def start_bot_for_request():
+    ensure_bot_started()
 
 
 @app.route('/')
@@ -41,13 +47,16 @@ def logs_page():
 
 @app.route('/echo', methods=['POST'])
 def echo():
-    print("bot_loop seen by Flask:", bot.bot_loop)
+    print("bot_loop seen by Flask:", getattr(bot, "bot_loop", None))
 
     message = request.form['message']
     channel_id = int(request.form['channel_id'])
 
     if not wait_for_bot_ready():
         return "Bot is still starting up. Please try again in a few seconds.", 503
+
+    if getattr(bot, "bot_loop", None) is None:
+        return "Discord bot loop is not available yet.", 503
 
     future = asyncio.run_coroutine_threadsafe(
         bot.send_message_to_channel(channel_id, message),
@@ -70,6 +79,9 @@ def join_voice():
         add_log("Bot is still starting up. Please try again in a few seconds.")
         return "Bot is still starting up. Please try again in a few seconds.", 503
 
+    if getattr(bot, "bot_loop", None) is None:
+        return "Discord bot loop is not available yet.", 503
+
     future = asyncio.run_coroutine_threadsafe(
         bot.join_voice_channel(voice_channel_id),
         bot.bot_loop
@@ -86,6 +98,9 @@ def join_voice():
 def leave_voice():
     if not wait_for_bot_ready():
         return "Bot is still starting up. Please try again in a few seconds.", 503
+
+    if getattr(bot, "bot_loop", None) is None:
+        return "Discord bot loop is not available yet.", 503
 
     future = asyncio.run_coroutine_threadsafe(
         bot.leave_voice_channel(),
@@ -124,8 +139,6 @@ def ensure_bot_started():
         bot_thread.start()
 
 
-ensure_bot_started()
-
-
 if __name__ == '__main__':
+    ensure_bot_started()
     app.run(debug=True)
