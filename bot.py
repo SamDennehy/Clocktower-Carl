@@ -1736,6 +1736,37 @@ async def tts(ctx, *, text: str):
     else:
         await ctx.send(f"Spoke text: {text}")
 
+REACTION_DISCORD_ID = None
+REACTION_EMOJI = "✅"
+AUTO_REACT = False
+
+async def set_auto_react(id: int, emoji: str):
+    global AUTO_REACT
+    global REACTION_DISCORD_ID
+    global REACTION_EMOJI
+    REACTION_DISCORD_ID = id
+    REACTION_EMOJI = emoji
+    AUTO_REACT = True
+    add_log("Auto-react enabled.")
+
+async def disable_auto_react():
+    global AUTO_REACT
+    AUTO_REACT = False
+    add_log("Auto-react disabled.")
+
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return
+
+    if AUTO_REACT and message.author.id == REACTION_DISCORD_ID:
+        try:
+            await message.add_reaction(REACTION_EMOJI)
+            add_log(f"Auto-reacted to message from {message.author} with {REACTION_EMOJI}")
+        except Exception as e:
+            add_log(f"Failed to auto-react: {e}")
+
+
 def run_bot():
     TOKEN = os.getenv("DISCORD_TOKEN")
 

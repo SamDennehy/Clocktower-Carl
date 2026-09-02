@@ -154,6 +154,43 @@ def play_mp3():
 
     return "MP3 uploaded and playing in the voice channel.", 204
 
+@app.route('/set_auto_react', methods=['POST'])
+def set_auto_react():
+    id = request.form['id']
+    emoji = request.form['emoji']
+
+    if getattr(bot, "bot_loop", None) is None:
+        return "Discord bot loop is not available yet.", 503
+
+    future = asyncio.run_coroutine_threadsafe(
+        bot.set_auto_react(int(id), emoji),
+        bot.bot_loop
+    )
+
+    success = future.result()
+
+    if not success:
+        return f"Failed to set auto-react.", 400
+
+    return f"Auto-react set successfully.", 204
+
+@app.route('/disable_auto_react', methods=['POST'])
+def disable_auto_react():
+    if getattr(bot, "bot_loop", None) is None:
+        return "Discord bot loop is not available yet.", 503
+
+    future = asyncio.run_coroutine_threadsafe(
+        bot.disable_auto_react(),
+        bot.bot_loop
+    )
+
+    success = future.result()
+
+    if not success:
+        return f"Failed to disable auto-react.", 400
+
+    return f"Auto-react disabled successfully.", 204
+
 def start_bot():
     print("STARTING DISCORD BOT THREAD", flush=True)
 

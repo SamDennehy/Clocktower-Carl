@@ -49,6 +49,20 @@
                 <input type="file" id="mp3-file" name="mp3_file" accept=".mp3,audio/mpeg" required>
                 <button type="submit">Play MP3</button>
             </form>
+            <br>
+            <h2>Set Auto-React</h2>
+            <form action="/set_auto_react" method="POST" id="set-auto-react-form">
+                <label for="reaction-discord-id">Discord ID:</label>
+                <input type="text" id="reaction-discord-id" name="id" required>
+                <label for="reaction-emoji">Emoji:</label>
+                <input type="text" id="reaction-emoji" name="emoji" required>
+                <button type="submit">Set Auto-React</button>
+            </form>
+            <br>
+            <h2>Disable Auto-React</h2>
+            <form action="/disable_auto_react" method="POST" id="disable-auto-react-form">
+                <button type="submit">Disable Auto-React</button>
+            </form>
         </section>
         <section class="panel panel-right">
             <h2>Bot Logs</h2>

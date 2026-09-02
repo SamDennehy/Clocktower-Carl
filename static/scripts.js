@@ -94,6 +94,38 @@ document.getElementById("mp3-form").addEventListener("submit", async function(ev
     }
 });
 
+document.getElementById("set-auto-react-form").addEventListener("submit", async function(event) {
+    event.preventDefault();
+    const form = event.target;
+
+    const response = await fetch(form.action, {
+        method: "POST",
+        body: new FormData(form)
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        console.log(error);
+        return;
+    }
+});
+
+document.getElementById("disable-auto-react-form").addEventListener("submit", async function(event) {
+    event.preventDefault();
+    const form = event.target;
+
+    const response = await fetch(form.action, {
+        method: "POST",
+        body: new FormData(form)
+    });
+
+    if (!response.ok) {
+        const error = await response.text();
+        console.log(error);
+        return;
+    }
+});
+
 updateLogs();
 
 setInterval(updateLogs, 1000);
