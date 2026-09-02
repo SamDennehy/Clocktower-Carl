@@ -1616,7 +1616,7 @@ async def generate_tts(text):
     with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
         temp_path = tmp.name
 
-    communicate = edge_tts.Communicate(text, "en-US-AvaMultilingualNeural", pitch="+100%", rate="+20%")
+    communicate = edge_tts.Communicate(text, "en-US-AvaMultilingualNeural", pitch="+100Hz", rate="+20%")
     await communicate.save(temp_path)
     return temp_path
 
