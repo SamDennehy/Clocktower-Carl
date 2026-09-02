@@ -1615,10 +1615,57 @@ async def generate_tts(text):
     """Generate TTS audio file in a unique temp file"""
     with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
         temp_path = tmp.name
-    
+
     communicate = edge_tts.Communicate(text, "en-IE-ConnorNeural")
     await communicate.save(temp_path)
     return temp_path
+
+async def play_audio_file(audio_file: str):
+    if not bot.voice_clients:
+        add_log("Bot is not connected to a voice channel.")
+        return False
+
+    voice_client = bot.voice_clients[0]
+
+    if not voice_client.is_connected():
+        add_log("Voice client is not connected.")
+        return False
+
+    if not os.path.exists(audio_file):
+        add_log(f"Audio file not found: {audio_file}")
+        return False
+
+    try:
+        audio_source = discord.FFmpegPCMAudio(audio_file)
+        add_log(f"Starting audio playback for file: {audio_file}")
+
+        def cleanup_audio(error):
+            try:
+                if os.path.exists(audio_file):
+                    os.remove(audio_file)
+                    add_log(f"Cleaned up temp audio file: {audio_file}")
+            except Exception as cleanup_err:
+                add_log(f"Cleanup error: {cleanup_err}")
+            if error:
+                add_log(f"Audio playback finished with error: {error}")
+
+        voice_client.play(audio_source, after=cleanup_audio)
+
+        while voice_client.is_playing():
+            await asyncio.sleep(0.5)
+
+        return True
+
+    except Exception as e:
+        add_log(f"PLAY_AUDIO ERROR: {type(e).__name__}: {e}")
+
+        try:
+            if os.path.exists(audio_file):
+                os.remove(audio_file)
+        except Exception:
+            pass
+
+        return False
 
 async def tts_speak(text: str):
     if not bot.voice_clients:
@@ -1676,6 +1723,9 @@ async def tts_speak(text: str):
                 pass
 
         return False
+
+async def play_mp3_file(mp3_path: str):
+    return await play_audio_file(mp3_path)
 
 @bot.command()
 async def tts(ctx, *, text: str):

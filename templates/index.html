@@ -42,6 +42,13 @@
                 <textarea id="tts-text" name="text" required></textarea>
                 <button type="submit">Send TTS</button>
             </form>
+            <br>
+            <h2>Play MP3 in Voice Channel</h2>
+            <form action="/play_mp3" method="POST" id="mp3-form" enctype="multipart/form-data">
+                <label for="mp3-file">Choose an MP3 file:</label>
+                <input type="file" id="mp3-file" name="mp3_file" accept=".mp3,audio/mpeg" required>
+                <button type="submit">Play MP3</button>
+            </form>
         </section>
         <section class="panel panel-right">
             <h2>Bot Logs</h2>

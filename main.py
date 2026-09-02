@@ -1,5 +1,7 @@
 import threading
 import asyncio
+import os
+import tempfile
 import time
 
 from flask import Flask, render_template, request
@@ -110,6 +112,47 @@ def tts():
         return f"Failed to generate TTS for text: {text}.", 400
 
     return f"TTS generated successfully for text: {text}.", 204
+
+@app.route('/play_mp3', methods=['POST'])
+def play_mp3():
+    if 'mp3_file' not in request.files:
+        return "No MP3 file uploaded.", 400
+
+    uploaded_file = request.files['mp3_file']
+
+    if uploaded_file.filename == '':
+        return "No file selected.", 400
+
+    if not uploaded_file.filename.lower().endswith('.mp3'):
+        return "Only .mp3 files are supported.", 400
+
+    temp_fd, temp_path = tempfile.mkstemp(suffix='.mp3')
+    os.close(temp_fd)
+    uploaded_file.save(temp_path)
+
+    if getattr(bot, "bot_loop", None) is None:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+        return "Discord bot loop is not available yet.", 503
+
+    try:
+        future = asyncio.run_coroutine_threadsafe(
+            bot.play_mp3_file(temp_path),
+            bot.bot_loop,
+        )
+        success = future.result()
+    except Exception as exc:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+        add_log(f"Failed to play uploaded MP3: {exc}")
+        return f"Failed to play uploaded MP3: {exc}", 500
+
+    if not success:
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+        return "Failed to play uploaded MP3.", 400
+
+    return "MP3 uploaded and playing in the voice channel.", 204
 
 def start_bot():
     print("STARTING DISCORD BOT THREAD", flush=True)
