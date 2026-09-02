@@ -1,0 +1,9 @@
+discord.py
+Flask
+gunicorn
+python-dotenv
+psycopg[binary]
+psycopg_pool
+PyNaCl
+davey
+edge-tts
