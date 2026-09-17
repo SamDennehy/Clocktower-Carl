@@ -221,17 +221,44 @@ const seatingForm = document.getElementById("seating-form");
 if (seatingForm) {
     const playerNamesInput = document.getElementById("player-names");
     const seating = document.getElementById("player-seating");
+    const seatStatusStorageKey = "playerSeatStatuses";
+
+    function getSeatStatuses() {
+        try {
+            const savedStatuses = JSON.parse(localStorage.getItem(seatStatusStorageKey) || "[]");
+            return Array.isArray(savedStatuses) ? savedStatuses : [];
+        } catch {
+            return [];
+        }
+    }
+
+    function saveSeatStatuses(statuses) {
+        localStorage.setItem(seatStatusStorageKey, JSON.stringify(statuses));
+    }
 
     function renderSeating(names) {
+        const seatStatuses = getSeatStatuses();
         seating.innerHTML = "";
         names.forEach((name, index) => {
             const seat = document.createElement("li");
-            const seatName = document.createElement("span");
+            const seatButton = document.createElement("button");
+            const isDead = seatStatuses[index] === true;
 
             seat.className = "player-seat";
             seat.style.setProperty("--seat-angle", `${(index * 360) / names.length}deg`);
-            seatName.textContent = name;
-            seat.appendChild(seatName);
+            seatButton.type = "button";
+            seatButton.className = "player-seat-button";
+            seatButton.textContent = name;
+            seatButton.classList.toggle("dead", isDead);
+            seatButton.setAttribute("aria-pressed", String(isDead));
+            seatButton.setAttribute("aria-label", `${name}: ${isDead ? "dead" : "alive"}. Toggle status`);
+            seatButton.addEventListener("click", function() {
+                const statuses = getSeatStatuses();
+                statuses[index] = !statuses[index];
+                saveSeatStatuses(statuses);
+                renderSeating(names);
+            });
+            seat.appendChild(seatButton);
             seating.appendChild(seat);
         });
     }
@@ -245,6 +272,11 @@ if (seatingForm) {
             .filter(Boolean);
 
         sessionStorage.setItem("playerNames", JSON.stringify(names));
+        const seatStatuses = getSeatStatuses().slice(0, names.length);
+        while (seatStatuses.length < names.length) {
+            seatStatuses.push(false);
+        }
+        saveSeatStatuses(seatStatuses);
         renderSeating(names);
     });
 

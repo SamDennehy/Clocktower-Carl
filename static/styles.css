@@ -280,6 +280,11 @@ h1 {
 	position: absolute;
 	top: 50%;
 	left: 50%;
+	transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(calc(-1 * min(18vw, 200px))) rotate(calc(-1 * var(--seat-angle)));
+	transform-origin: 0 0;
+}
+
+.player-seat-button {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -290,11 +295,24 @@ h1 {
 	border: 2px solid rgb(128, 47, 128);
 	border-radius: 50%;
 	background: rgba(255, 255, 255, 0.16);
+	color: inherit;
+	font: inherit;
 	font-size: 0.85rem;
 	font-weight: 700;
 	text-shadow: 2px 2px 2px #111;
-	transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(calc(-1 * min(18vw, 200px))) rotate(calc(-1 * var(--seat-angle)));
-	transform-origin: 0 0;
+	cursor: pointer;
+}
+
+.player-seat-button.dead {
+	border-color: #010101;
+	color: rgb(132, 131, 131);
+	background: rgba(33, 33, 33, 0.72);
+	filter: grayscale(0.55);
+}
+
+.player-seat-button:focus-visible {
+	outline: 3px solid #f7d774;
+	outline-offset: 4px;
 }
 
 .panel {
@@ -441,6 +459,11 @@ h1 {
 		transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(calc(-1 * min(28vw, 270px))) rotate(calc(-1 * var(--seat-angle)));
 	}
 
+	.player-seat-button {
+		width: 85px;
+		height: 85px;
+	}
+
 	.app-shell {
 		grid-template-columns: 1fr;
 	}
@@ -484,6 +507,12 @@ h1 {
 		height: 60px;
 		font-size: 0.75rem;
 		transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(calc(-1 * min(38vw, 195px))) rotate(calc(-1 * var(--seat-angle)));
+	}
+
+	.player-seat-button {
+		width: 60px;
+		height: 60px;
+		font-size: 0.75rem;
 	}
 
 	.player-seating::before {
