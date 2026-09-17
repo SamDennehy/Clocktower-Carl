@@ -25,6 +25,18 @@ body {
 	border-bottom: 3px solid rgb(128, 47, 128);
 }
 
+.grimoire-banner {
+	width: 100%;
+	background-color: rgba(163, 73, 164);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	position: relative;
+	overflow: hidden;
+	min-height: 75px;
+	border-bottom: 3px solid rgb(128, 47, 128);
+}	
+
 .banner img {
 	max-width: 100%;
 	max-height: 300px;
@@ -33,6 +45,28 @@ body {
 	display: block;
 	padding: 5rem;
 
+}
+
+.grimoire-banner img {
+	max-width: 100%;
+	max-height: 150px;
+	width: auto;
+	height: auto;
+	display: block;
+	padding: 2rem;
+}
+
+.grimoire-kicker {
+	display: none;
+}
+
+.big-brother-image {
+	max-width: 100%;
+	max-height: 600px;
+	width: auto;
+	height: auto;
+	display: block;
+	padding: 5rem;
 }
 
 h1 {
@@ -51,6 +85,216 @@ h1 {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	flex: 1;
+}
+
+.grimoire-shell {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	align-items: center;
+	justify-content: center;
+	flex: 1;
+	width: 100%;
+	box-sizing: border-box;
+	background-color: rgba(163, 73, 164);
+	padding: 2rem;
+}
+
+.grimoire-shell .timer {
+	width: 100%;
+	box-sizing: border-box;
+	margin-inline: auto;
+	padding: 2rem;
+	text-align: center;
+}
+
+.back-home-button {
+	margin-bottom: 1rem;
+}
+
+.watching-message {
+	margin: 0 0 1rem;
+	color: #ffffff;
+	font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+	font-size: 4rem;
+	font-weight: 900;
+	letter-spacing: 0.12em;
+	line-height: 1;
+	text-shadow: 4px 4px 0 rgb(97, 31, 97);
+}
+
+.timer-carl {
+	position: relative;
+	width: min(400px, 35vw);
+	height: min(400px, 35vw);
+	margin: 0 auto 1.5rem;
+	border: 4px solid rgb(128, 47, 128);
+	border-radius: 50%;
+	overflow: hidden;
+	background: rgba(128, 47, 128, 0.7);
+}
+
+.timer-carl img {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.timer-carl-image {
+	opacity: 0;
+}
+
+.timer-content {
+	padding: 0;
+}
+
+.timer-label {
+	margin: 0 0 1rem;
+	color: #ffffff;
+	font-family: monospace;
+	font-size: 0.9rem;
+	font-weight: 700;
+	letter-spacing: 0.25em;
+}
+
+#timer-display {
+	min-height: 5.25rem;
+	margin: 0;
+	color: #ffffff;
+	font-family: monospace;
+	font-size: 4.5rem;
+	font-weight: 900;
+	line-height: 1;
+	letter-spacing: 0;
+	text-shadow: 3px 3px 3px #111;
+}
+
+.grimoire-shell form {
+	max-width: 440px;
+	margin: 2rem auto 0;
+	text-align: left;
+}
+
+.grimoire-shell label {
+	color: #ded2e4;
+	font-size: 1.1rem;
+	font-weight: 700;
+}
+
+.grimoire-shell input {
+	box-sizing: border-box;
+	width: 100%;
+	padding: 0.9rem 1rem;
+	border: 2px solid rgb(128, 47, 128);
+	border-radius: 5px;
+	background: rgba(255, 255, 255, 0.2);
+	color: #ffffff;
+	font-size: 1.2rem;
+}
+
+.grimoire-shell button {
+	padding: 1rem;
+	background: rgb(128, 47, 128);
+	color: #ffffff;
+	font-size: 1.1rem;
+}
+
+.grimoire-shell button:hover {
+	background: rgb(97, 31, 97);
+}
+
+.seating-panel {
+	width: 100%;
+	box-sizing: border-box;
+	align-self: start;
+	margin-top: 0;
+	margin-inline: auto;
+	padding: 1.5rem 2rem 3rem;
+	text-align: center;
+}
+
+.seating-heading-row {
+	display: flex;
+	justify-content: center;
+	text-align: center;
+}
+
+.seating-help {
+	margin: 0.35rem 0 0;
+	font-size: 1rem;
+}
+
+#seating-form {
+	width: min(620px, 100%);
+	margin: 1.5rem auto 0;
+	flex-direction: column;
+	align-items: stretch;
+}
+
+#seating-form label {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+}
+
+#seating-form input {
+	min-width: 0;
+}
+
+.player-seating {
+	position: relative;
+	width: min(600px, 38vw);
+	height: min(600px, 38vw);
+	min-height: 360px;
+	margin: 2rem auto 0;
+	padding: 0;
+	border: 3px solid rgba(128, 47, 128, 0.7);
+	border-radius: 50%;
+	background: rgba(128, 47, 128, 0.12);
+	list-style: none;
+}
+
+.player-seating::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	display: grid;
+	place-items: center;
+	width: 130px;
+	height: 130px;
+	border: 3px solid rgba(255, 255, 255, 0.35);
+	border-radius: 50%;
+	background-image: url("carl.png");
+	background-position: center;
+	background-size: cover;
+	font-family: monospace;
+	font-weight: 700;
+	transform: translate(-50%, -50%);
+}
+
+.player-seat {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 85px;
+	height: 85px;
+	box-sizing: border-box;
+	padding: 0.4rem;
+	border: 2px solid rgb(128, 47, 128);
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.16);
+	font-size: 0.85rem;
+	font-weight: 700;
+	text-shadow: 2px 2px 2px #111;
+	transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(calc(-1 * min(18vw, 200px))) rotate(calc(-1 * var(--seat-angle)));
+	transform-origin: 0 0;
 }
 
 .panel {
@@ -174,6 +418,29 @@ h1 {
 }
 
 @media (max-width: 900px) {
+	.grimoire-shell {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.grimoire-shell .timer,
+	.seating-panel {
+		width: 100%;
+	}
+
+	.seating-panel {
+		margin-top: 2rem;
+	}
+
+	.player-seating {
+		width: min(600px, 90vw);
+		height: min(600px, 60vw);
+	}
+
+	.player-seat {
+		transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(calc(-1 * min(28vw, 270px))) rotate(calc(-1 * var(--seat-angle)));
+	}
+
 	.app-shell {
 		grid-template-columns: 1fr;
 	}
@@ -185,6 +452,79 @@ h1 {
 
 	.preview-role-grid {
 		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 700px) {
+	.grimoire-kicker {
+		display: none;
+	}
+
+	.grimoire-shell {
+		padding: 1.5rem 0.75rem 2rem;
+	}
+
+	.grimoire-shell .timer {
+		padding: 2rem 1rem 1.5rem;
+	}
+
+	.seating-panel {
+		padding-inline: 0.75rem;
+	}
+
+	.player-seating {
+		width: 92vw;
+		height: 92vw;
+		min-height: 0;
+		max-height: 520px;
+	}
+
+	.player-seat {
+		width: 60px;
+		height: 60px;
+		font-size: 0.75rem;
+		transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(calc(-1 * min(38vw, 195px))) rotate(calc(-1 * var(--seat-angle)));
+	}
+
+	.player-seating::before {
+		width: 75px;
+		height: 75px;
+	}
+
+	.seating-heading-row {
+		align-items: stretch;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	#seating-form {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.timer-carl {
+		position: relative;
+		top: auto;
+		left: auto;
+		width: 165px;
+		height: 165px;
+	}
+
+	.watching-message {
+		font-size: 1.8rem;
+	}
+
+	.timer-content {
+		padding: 0;
+	}
+
+	#timer-display {
+		min-height: 5.25rem;
+		font-size: 4.5rem;
+	}
+
+	.timer-label {
+		font-size: 1rem;
 	}
 }
 

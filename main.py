@@ -28,6 +28,10 @@ def start_bot_for_request():
 def home():
     return render_template('index.html')
 
+@app.route('/grimoire')
+def grimoire():
+    return render_template('grimoire.html')
+
 
 @app.route('/logs')
 def logs_page():
