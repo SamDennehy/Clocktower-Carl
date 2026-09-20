@@ -14,6 +14,14 @@ body {
 	flex-direction: column;
 }
 
+#confetti-canvas {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 1000;
+	pointer-events: none;
+}
+
 .banner {
 	width: 100%;
 	background-color: rgba(163, 73, 164);
@@ -23,6 +31,24 @@ body {
 	overflow: hidden;
 	min-height: 150px;
 	border-bottom: 3px solid rgb(128, 47, 128);
+}
+
+.page-navigation {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.75rem;
+	padding: 0.75rem 1.5rem;
+	background-color: rgba(128, 47, 128, 0.9);
+	border-bottom: 2px solid rgb(97, 31, 97);
+}
+
+.page-navigation button {
+	padding: 0.6rem 1rem;
+}
+
+.page-navigation .view-toggle.active {
+	background-color: #f7d774;
+	color: #111;
 }
 
 .grimoire-banner {
@@ -96,26 +122,48 @@ h1 {
 	width: 100%;
 	box-sizing: border-box;
 	background-color: rgba(163, 73, 164);
-	padding: 2rem;
+	padding: clamp(0.75rem, 2vw, 2rem);
+}
+
+.grimoire-shell.view-timer {
+	display: flex;
+	align-items: center;
+}
+
+.grimoire-shell.view-timer .timer {
+	max-width: 900px;
+	margin-inline: auto;
+}
+
+.grimoire-shell.view-timer .seating-panel,
+.grimoire-shell.view-seating .timer {
+	display: none;
+}
+
+.grimoire-shell.view-seating {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.grimoire-shell.view-seating .seating-panel {
+	max-width: 1000px;
+	margin: 0 auto;
 }
 
 .grimoire-shell .timer {
 	width: 100%;
 	box-sizing: border-box;
 	margin-inline: auto;
-	padding: 2rem;
+	padding: clamp(0.75rem, 2vw, 2rem);
 	text-align: center;
-}
-
-.back-home-button {
-	margin-bottom: 1rem;
 }
 
 .watching-message {
 	margin: 0 0 1rem;
 	color: #ffffff;
 	font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
-	font-size: 4rem;
+	font-size: clamp(2rem, 5vw, 4rem);
 	font-weight: 900;
 	letter-spacing: 0.12em;
 	line-height: 1;
@@ -124,9 +172,9 @@ h1 {
 
 .timer-carl {
 	position: relative;
-	width: min(400px, 35vw);
-	height: min(400px, 35vw);
-	margin: 0 auto 1.5rem;
+	width: min(500px, 56.25vw, 61vh);
+	height: min(500px, 56.25vw, 61vh);
+	margin: 0 auto clamp(0.75rem, 2vh, 1.5rem);
 	border: 4px solid rgb(128, 47, 128);
 	border-radius: 50%;
 	overflow: hidden;
@@ -159,11 +207,11 @@ h1 {
 }
 
 #timer-display {
-	min-height: 5.25rem;
+	min-height: clamp(3.5rem, 8vh, 5.25rem);
 	margin: 0;
 	color: #ffffff;
 	font-family: monospace;
-	font-size: 4.5rem;
+	font-size: clamp(2.75rem, 7vw, 4.5rem);
 	font-weight: 900;
 	line-height: 1;
 	letter-spacing: 0;
@@ -172,32 +220,32 @@ h1 {
 
 .grimoire-shell form {
 	max-width: 440px;
-	margin: 2rem auto 0;
+	margin: clamp(1rem, 2vh, 2rem) auto 0;
 	text-align: left;
 }
 
 .grimoire-shell label {
 	color: #ded2e4;
-	font-size: 1.1rem;
+	font-size: clamp(0.95rem, 1.5vw, 1.1rem);
 	font-weight: 700;
 }
 
 .grimoire-shell input {
 	box-sizing: border-box;
 	width: 100%;
-	padding: 0.9rem 1rem;
+	padding: 0.7rem 0.85rem;
 	border: 2px solid rgb(128, 47, 128);
 	border-radius: 5px;
 	background: rgba(255, 255, 255, 0.2);
 	color: #ffffff;
-	font-size: 1.2rem;
+	font-size: clamp(1rem, 1.5vw, 1.2rem);
 }
 
 .grimoire-shell button {
-	padding: 1rem;
+	padding: 0.75rem 1rem;
 	background: rgb(128, 47, 128);
 	color: #ffffff;
-	font-size: 1.1rem;
+	font-size: clamp(0.95rem, 1.5vw, 1.1rem);
 }
 
 .grimoire-shell button:hover {
@@ -210,7 +258,7 @@ h1 {
 	align-self: start;
 	margin-top: 0;
 	margin-inline: auto;
-	padding: 1.5rem 2rem 3rem;
+	padding: clamp(0.75rem, 2vw, 1.5rem) clamp(0.75rem, 2vw, 2rem) clamp(1rem, 3vh, 3rem);
 	text-align: center;
 }
 
@@ -246,10 +294,10 @@ h1 {
 
 .player-seating {
 	position: relative;
-	width: min(600px, 38vw);
-	height: min(600px, 38vw);
-	min-height: 360px;
-	margin: 2rem auto 0;
+	width: min(600px, 42vw, 68vh);
+	height: min(600px, 42vw, 68vh);
+	min-height: 0;
+	margin: clamp(0.75rem, 2vh, 2rem) auto 0;
 	padding: 0;
 	border: 3px solid rgba(128, 47, 128, 0.7);
 	border-radius: 50%;
@@ -264,8 +312,8 @@ h1 {
 	left: 50%;
 	display: grid;
 	place-items: center;
-	width: 130px;
-	height: 130px;
+	width: min(130px, 15vw);
+	height: min(130px, 15vw);
 	border: 3px solid rgba(255, 255, 255, 0.35);
 	border-radius: 50%;
 	background-image: url("carl.png");
@@ -280,7 +328,7 @@ h1 {
 	position: absolute;
 	top: 50%;
 	left: 50%;
-	transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(calc(-1 * min(18vw, 200px))) rotate(calc(-1 * var(--seat-angle)));
+	transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(calc(-1 * min(18vw, 200px, 30vh))) rotate(calc(-1 * var(--seat-angle)));
 	transform-origin: 0 0;
 }
 
@@ -451,12 +499,12 @@ h1 {
 	}
 
 	.player-seating {
-		width: min(600px, 90vw);
-		height: min(600px, 60vw);
+		width: min(600px, 84vw, 68vh);
+		height: min(600px, 84vw, 68vh);
 	}
 
 	.player-seat {
-		transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(calc(-1 * min(28vw, 270px))) rotate(calc(-1 * var(--seat-angle)));
+		transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(calc(-1 * min(28vw, 270px, 32vh))) rotate(calc(-1 * var(--seat-angle)));
 	}
 
 	.player-seat-button {
@@ -484,11 +532,11 @@ h1 {
 	}
 
 	.grimoire-shell {
-		padding: 1.5rem 0.75rem 2rem;
+		padding: 0.75rem 0.5rem 1rem;
 	}
 
 	.grimoire-shell .timer {
-		padding: 2rem 1rem 1.5rem;
+		padding: 1rem 0.5rem;
 	}
 
 	.seating-panel {
@@ -496,17 +544,16 @@ h1 {
 	}
 
 	.player-seating {
-		width: 92vw;
-		height: 92vw;
+		width: min(520px, 88vw, 58vh);
+		height: min(520px, 88vw, 58vh);
 		min-height: 0;
-		max-height: 520px;
 	}
 
 	.player-seat {
 		width: 60px;
 		height: 60px;
 		font-size: 0.75rem;
-		transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(calc(-1 * min(38vw, 195px))) rotate(calc(-1 * var(--seat-angle)));
+		transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(calc(-1 * min(38vw, 195px, 26vh))) rotate(calc(-1 * var(--seat-angle)));
 	}
 
 	.player-seat-button {

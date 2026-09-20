@@ -8,9 +8,14 @@
      <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='carl.ico') }}">
 </head>
 <body>
-    <main class="grimoire-shell">
+    <nav class="page-navigation" aria-label="Page navigation">
+        <button type="button" class="view-toggle active" data-view="timer" aria-pressed="true">Carl + Timer</button>
+        <button type="button" class="view-toggle" data-view="seating" aria-pressed="false">Grimoire</button>
+        <button type="button" onclick="window.location.href='/grimoire'">Dashboard</button>
+    </nav>
+    <main class="grimoire-shell view-timer">
         <section class="timer" aria-labelledby="timer-heading">
-            <p class="watching-message">CARL IS WATCHING</p>
+            <p id="watching-message" class="watching-message">CARL IS WATCHING</p>
             <div class="timer-carl">
                 <img class="timer-carl-image timer-carl-image-one" src="{{ url_for('static', filename='carl.png') }}" alt="">
                 <img class="timer-carl-image timer-carl-image-two" src="{{ url_for('static', filename='carl2.png') }}" alt="">
@@ -20,7 +25,7 @@
                 <p class="timer-label" id="timer-heading">TIME REMAINING</p>
                 <p id="timer-display" aria-live="polite">0m 0s</p>
             </div>
-            <form action="#" method="POST" id="timer-form" onsubmit="setTimer(event)">
+            <form action="#" method="POST" id="timer-form">
                 <label for="timer-duration">Set Timer (in seconds):</label>
                 <input type="number" id="timer-duration" name="duration" min="1" required>
                 <button type="submit">Set Timer</button>
@@ -31,6 +36,7 @@
             <ol id="player-seating" class="player-seating" aria-live="polite"></ol>
             <form id="seating-form">
                 <label for="player-names">Players</label>
+                <br>
                 <div class="seating-heading-row">
                     <div>
                         <p class="timer-label" id="seating-heading">PLAYER ORDER</p>
@@ -41,7 +47,6 @@
                 <button type="submit">Display Seats</button>
             </form>
         </section>
-        <button type="button" class="back-home-button" onclick="window.location.href='/'">Back to Dashboard</button>
     </main>
     <script src="{{ url_for('static', filename='scripts.js') }}"></script>
 </body>

@@ -1,20 +1,58 @@
 let timerInterval;
+let confettiAnimationFrame;
 const carlFrameDurations = [200, 150, 90];
 const carlFrameOrder = [0, 1, 2, 1, 0];
 const carlIdleDuration = 30000;
 
 async function updateLogs() {
-    const response = await fetch("/logs");
-    const data = await response.json();
-
     const logsElement = document.getElementById("logs-container");
+    if (!logsElement) {
+        return;
+    }
 
-    logsElement.innerHTML = "";
+    try {
+        const response = await fetch("/logs");
+        if (!response.ok) {
+            throw new Error(`Log request failed with status ${response.status}`);
+        }
 
-    data.logs.forEach(log => {
-        const logElement = document.createElement("div");
-        logElement.textContent = log;
-        logsElement.appendChild(logElement);
+        const data = await response.json();
+
+        logsElement.innerHTML = "";
+
+        data.logs.forEach(log => {
+            const logElement = document.createElement("div");
+            logElement.textContent = log;
+            logsElement.appendChild(logElement);
+        });
+    } catch (error) {
+        console.error("Unable to update logs:", error);
+    }
+}
+
+if (document.getElementById("logs-container")) {
+    updateLogs();
+    setInterval(updateLogs, 1000);
+}
+
+const grimoireShell = document.querySelector(".grimoire-shell");
+const viewToggleButtons = document.querySelectorAll(".view-toggle");
+
+if (grimoireShell && viewToggleButtons.length > 0) {
+    viewToggleButtons.forEach(button => {
+        button.addEventListener("click", function() {
+            const view = button.dataset.view;
+            const isSeatingView = view === "seating";
+
+            grimoireShell.classList.toggle("view-timer", !isSeatingView);
+            grimoireShell.classList.toggle("view-seating", isSeatingView);
+
+            viewToggleButtons.forEach(toggleButton => {
+                const isActive = toggleButton === button;
+                toggleButton.classList.toggle("active", isActive);
+                toggleButton.setAttribute("aria-pressed", String(isActive));
+            });
+        });
     });
 }
 
@@ -24,6 +62,8 @@ function addSubmitHandler(formId, handler) {
         form.addEventListener("submit", handler);
     }
 }
+
+addSubmitHandler("timer-form", setTimer);
 
 addSubmitHandler("echo-form", async function(event) {
     event.preventDefault();
@@ -147,6 +187,11 @@ function setTimer(event) {
         console.error("Invalid timer duration");
         return;
     }
+    
+    if (durationSeconds === 2809) {
+        displayEasterEgg("Happy Birthday Dean!");
+        return;
+    }
 
     startTimer(Date.now() + durationSeconds * 1000);
 }
@@ -175,6 +220,87 @@ function startTimer(endTime) {
 
     updateTimerDisplay();
     timerInterval = setInterval(updateTimerDisplay, 250);
+}
+
+function displayEasterEgg(message) {
+    const easterEgg = document.getElementById("watching-message");
+    if (easterEgg) {
+        easterEgg.textContent = message;
+    }
+
+    launchConfetti();
+}
+
+function launchConfetti() {
+    const existingCanvas = document.getElementById("confetti-canvas");
+    if (existingCanvas) {
+        existingCanvas.remove();
+    }
+
+    if (confettiAnimationFrame) {
+        cancelAnimationFrame(confettiAnimationFrame);
+    }
+
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    const colors = ["#f7d774", "#ffffff", "#ff6b6b", "#69d2e7", "#9be564"];
+    const particles = [];
+    const pixelRatio = window.devicePixelRatio || 1;
+    const endTime = performance.now() + 3500;
+
+    canvas.id = "confetti-canvas";
+    document.body.appendChild(canvas);
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth * pixelRatio;
+        canvas.height = window.innerHeight * pixelRatio;
+        canvas.style.width = `${window.innerWidth}px`;
+        canvas.style.height = `${window.innerHeight}px`;
+        context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    }
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas, { once: true });
+
+    for (let index = 0; index < 140; index += 1) {
+        particles.push({
+            x: Math.random() * window.innerWidth,
+            y: -20 - Math.random() * window.innerHeight * 0.35,
+            width: 5 + Math.random() * 7,
+            height: 8 + Math.random() * 9,
+            speed: 2 + Math.random() * 4,
+            drift: -1.5 + Math.random() * 3,
+            rotation: Math.random() * Math.PI,
+            rotationSpeed: -0.15 + Math.random() * 0.3,
+            color: colors[index % colors.length]
+        });
+    }
+
+    function animateConfetti(currentTime) {
+        context.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+        particles.forEach(particle => {
+            particle.y += particle.speed;
+            particle.x += particle.drift;
+            particle.rotation += particle.rotationSpeed;
+
+            context.save();
+            context.translate(particle.x, particle.y);
+            context.rotate(particle.rotation);
+            context.fillStyle = particle.color;
+            context.fillRect(-particle.width / 2, -particle.height / 2, particle.width, particle.height);
+            context.restore();
+        });
+
+        if (currentTime < endTime) {
+            confettiAnimationFrame = requestAnimationFrame(animateConfetti);
+        } else {
+            canvas.remove();
+            confettiAnimationFrame = undefined;
+        }
+    }
+
+    confettiAnimationFrame = requestAnimationFrame(animateConfetti);
 }
 
 const savedTimerEndTime = Number(sessionStorage.getItem("timerEndTime"));

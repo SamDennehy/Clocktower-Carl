@@ -26,11 +26,11 @@ def start_bot_for_request():
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('grimoire.html')
 
 @app.route('/grimoire')
 def grimoire():
-    return render_template('grimoire.html')
+    return render_template('index.html')
 
 
 @app.route('/logs')

@@ -8,6 +8,9 @@
      <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='carl.ico') }}">
 </head>
 <body>
+    <nav class="page-navigation" aria-label="Page navigation">
+        <button type="button" onclick="window.location.href='/'">Grimoire</button>
+    </nav>
     <header class="banner">
         <img src="{{ url_for('static', filename='carl.png') }}" alt="Clocktower Carl Banner">
         <h1>Clocktower Carl Dashboard</h1>
@@ -69,7 +72,6 @@
             <div id="logs-container" class="log-window">
                 <!-- Logs will be dynamically inserted here -->
             </div>
-            <button type="button" onclick="window.location.href='{{ url_for('grimoire') }}'">Go to Grimoire</button>
         </section>
     </main>
     <script src="{{ url_for('static', filename='scripts.js') }}"></script>
