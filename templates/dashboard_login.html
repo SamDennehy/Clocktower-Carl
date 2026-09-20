@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <main class="app-shell">
+        <section class="panel">
+            <h1>Dashboard Login</h1>
+            <form method="POST">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required autofocus>
+                <button type="submit">Log In</button>
+            </form>
+            {% if request.method == 'POST' %}
+                <p>Incorrect password.</p>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

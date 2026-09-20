@@ -1,11 +1,15 @@
 import threading
 import asyncio
+from functools import wraps
+from hmac import compare_digest
 import os
 import tempfile
 import time
 
-from flask import Flask, render_template, request
+from dotenv import load_dotenv
+from flask import Flask, abort, redirect, render_template, request, session, url_for
 
+load_dotenv()
 import bot
 
 def add_log(message):
@@ -15,8 +19,41 @@ def get_logs():
     return bot.get_logs()
 
 app = Flask(__name__)
+app.secret_key = os.getenv('FLASK_SECRET_KEY', os.urandom(32))
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 bot_thread = None
 bot_thread_lock = threading.Lock()
+DASHBOARD_ENDPOINTS = {
+    'dashboard',
+    'logs_page',
+    'echo',
+    'join_voice',
+    'leave_voice',
+    'tts',
+    'play_mp3',
+    'set_auto_react',
+    'disable_auto_react',
+}
+
+
+def dashboard_required(view):
+    @wraps(view)
+    def wrapped_view(*args, **kwargs):
+        if not session.get('dashboard_authenticated'):
+            return redirect(url_for('dashboard_login', next=request.path))
+        return view(*args, **kwargs)
+
+    return wrapped_view
+
+
+@app.before_request
+def require_dashboard_authentication():
+    if (
+        request.endpoint in DASHBOARD_ENDPOINTS
+        and not session.get('dashboard_authenticated')
+    ):
+        return redirect(url_for('dashboard_login', next=request.path))
 
 
 @app.before_request
@@ -28,17 +65,39 @@ def start_bot_for_request():
 def home():
     return render_template('grimoire.html')
 
-@app.route('/grimoire')
-def grimoire():
-    return render_template('index.html')
+@app.route('/dashboard')
+@dashboard_required
+def dashboard():
+    return render_template('dashboard.html')
+
+@app.route('/dashboard/login', methods=['GET', 'POST'])
+def dashboard_login():
+    if request.method == 'POST':
+        dashboard_password = os.getenv('DASHBOARD_PASSWORD')
+        if not dashboard_password:
+            abort(500, description='DASHBOARD_PASSWORD is not configured.')
+
+        if compare_digest(dashboard_password, request.form.get('password', '')):
+            session['dashboard_authenticated'] = True
+            return redirect(url_for('dashboard'))
+
+    return render_template('dashboard_login.html'), 401
+
+
+@app.route('/dashboard/logout')
+def dashboard_logout():
+    session.pop('dashboard_authenticated', None)
+    return redirect(url_for('home'))
 
 
 @app.route('/logs')
+@dashboard_required
 def logs_page():
     return {"logs": get_logs()}
 
 
 @app.route('/echo', methods=['POST'])
+@dashboard_required
 def echo():
     print("bot_loop seen by Flask:", getattr(bot, "bot_loop", None))
 
@@ -61,6 +120,7 @@ def echo():
     return f"Echoed message to channel ID: {channel_id}.", 204
 
 @app.route('/join_voice', methods=['POST'])
+@dashboard_required
 def join_voice():
     voice_channel_id = int(request.form['voice_channel_id'])
     add_log(f"Attempting to join voice channel ID: {voice_channel_id}.")
@@ -81,6 +141,7 @@ def join_voice():
     return f"Joined voice channel ID: {voice_channel_id}.", 204
 
 @app.route('/leave_voice', methods=['POST'])
+@dashboard_required
 def leave_voice():
 
     if getattr(bot, "bot_loop", None) is None:
@@ -99,6 +160,7 @@ def leave_voice():
     return f"Left voice channel successfully.", 204
 
 @app.route('/tts', methods=['POST'])
+@dashboard_required
 def tts():
     text = request.form['text']
 
@@ -118,6 +180,7 @@ def tts():
     return f"TTS generated successfully for text: {text}.", 204
 
 @app.route('/play_mp3', methods=['POST'])
+@dashboard_required
 def play_mp3():
     if 'mp3_file' not in request.files:
         return "No MP3 file uploaded.", 400
@@ -159,6 +222,7 @@ def play_mp3():
     return "MP3 uploaded and playing in the voice channel.", 204
 
 @app.route('/set_auto_react', methods=['POST'])
+@dashboard_required
 def set_auto_react():
     id = request.form['id']
     emoji = request.form['emoji']
@@ -179,6 +243,7 @@ def set_auto_react():
     return f"Auto-react set successfully.", 204
 
 @app.route('/disable_auto_react', methods=['POST'])
+@dashboard_required
 def disable_auto_react():
     if getattr(bot, "bot_loop", None) is None:
         return "Discord bot loop is not available yet.", 503
