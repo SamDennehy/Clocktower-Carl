@@ -3,6 +3,8 @@ let confettiAnimationFrame;
 const carlFrameDurations = [200, 150, 90];
 const carlFrameOrder = [0, 1, 2, 1, 0];
 const carlIdleDuration = 30000;
+const timerCrazyDuration = 5000;
+let timerCrazyTimeout;
 
 async function updateLogs() {
     const logsElement = document.getElementById("logs-container");
@@ -177,6 +179,13 @@ function setTimer(event) {
 
 function startTimer(endTime) {
     clearInterval(timerInterval);
+    clearTimeout(timerCrazyTimeout);
+
+    const timerCarl = document.querySelector(".timer-carl");
+    if (timerCarl) {
+        timerCarl.classList.remove("timer-expired");
+    }
+
     const timerDisplay = document.getElementById("timer-display");
 
     if (!timerDisplay) {
@@ -194,6 +203,13 @@ function startTimer(endTime) {
         if (remainingSeconds <= 0) {
             clearInterval(timerInterval);
             sessionStorage.removeItem("timerEndTime");
+
+            if (timerCarl) {
+                timerCarl.classList.add("timer-expired");
+                timerCrazyTimeout = setTimeout(() => {
+                    timerCarl.classList.remove("timer-expired");
+                }, timerCrazyDuration);
+            }
         }
     }
 
