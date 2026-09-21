@@ -4,7 +4,17 @@ const carlFrameDurations = [200, 150, 90];
 const carlFrameOrder = [0, 1, 2, 1, 0];
 const carlIdleDuration = 30000;
 const timerCrazyDuration = 5000;
+const audioToggleButton = document.getElementById("toggle-audio-button");
+let audioToggle = true;
 let timerCrazyTimeout;
+
+if (audioToggleButton) {
+    audioToggleButton.addEventListener("click", function() {
+        audioToggle = !audioToggle;
+        audioToggleButton.textContent = audioToggle ? "Audio On" : "Audio Off";
+        }
+    )
+};
 
 async function updateLogs() {
     const logsElement = document.getElementById("logs-container");
@@ -173,8 +183,13 @@ function setTimer(event) {
         displayEasterEgg("Happy Birthday Dean!");
         return;
     }
-
-    startTimer(Date.now() + durationSeconds * 1000);
+    else if (durationSeconds === 67) {
+        displayEasterEgg("67");
+        return;
+    }
+    else {
+        startTimer(Date.now() + durationSeconds * 1000);
+    }
 }
 
 function startTimer(endTime) {
@@ -205,10 +220,27 @@ function startTimer(endTime) {
             sessionStorage.removeItem("timerEndTime");
 
             if (timerCarl) {
-                timerCarl.classList.add("timer-expired");
-                timerCrazyTimeout = setTimeout(() => {
-                    timerCarl.classList.remove("timer-expired");
-                }, timerCrazyDuration);
+                var chimeAudio = document.getElementById("chime-audio");
+                var changeCarlFaceAndScream = () => {
+                    timerCarl.classList.add("timer-expired");
+                    timerCrazyTimeout = setTimeout(() => {
+                        timerCarl.classList.remove("timer-expired");
+                    }, timerCrazyDuration);
+
+                    var screamingAudio = document.getElementById("screaming-audio");
+                    if (screamingAudio && audioToggle) {
+                        screamingAudio.currentTime = 0;
+                        screamingAudio.play();
+                    }
+                };
+
+                if (chimeAudio && audioToggle) {
+                    chimeAudio.currentTime = 0;
+                    chimeAudio.addEventListener("ended", changeCarlFaceAndScream, { once: true });
+                    chimeAudio.play();
+                } else {
+                    changeCarlFaceAndScream();
+                }
             }
         }
     }

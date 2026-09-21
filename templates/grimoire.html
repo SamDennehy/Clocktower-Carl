@@ -13,6 +13,14 @@
     </nav>
     <main class="grimoire-shell">
         <section class="timer" aria-labelledby="timer-heading">
+            <audio id="chime-audio">
+                <source src="{{ url_for('static', filename='chimes.mp3') }}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <audio id="screaming-audio">
+                <source src="{{ url_for('static', filename='screaming.mp3') }}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
             <p id="watching-message" class="watching-message">CARL IS WATCHING</p>
             <div class="timer-carl">
                 <img class="timer-carl-image timer-carl-image-one" src="{{ url_for('static', filename='carl.png') }}" alt="">
@@ -28,6 +36,7 @@
                 <label for="timer-duration">Set Timer (in seconds):</label>
                 <input type="number" id="timer-duration" name="duration" min="1" required>
                 <button type="submit">Set Timer</button>
+                <button type="button" id="toggle-audio-button">Audio On</button>
             </form>
         </section>
 
