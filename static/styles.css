@@ -46,11 +46,6 @@ body {
 	padding: 0.6rem 1rem;
 }
 
-.page-navigation .view-toggle.active {
-	background-color: #f7d774;
-	color: #111;
-}
-
 .grimoire-banner {
 	width: 100%;
 	background-color: rgba(163, 73, 164);
