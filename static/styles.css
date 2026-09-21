@@ -125,32 +125,6 @@ h1 {
 	padding: clamp(0.75rem, 2vw, 2rem);
 }
 
-.grimoire-shell.view-timer {
-	display: flex;
-	align-items: center;
-}
-
-.grimoire-shell.view-timer .timer {
-	max-width: 900px;
-	margin-inline: auto;
-}
-
-.grimoire-shell.view-timer .seating-panel,
-.grimoire-shell.view-seating .timer {
-	display: none;
-}
-
-.grimoire-shell.view-seating {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.grimoire-shell.view-seating .seating-panel {
-	max-width: 1000px;
-	margin: 0 auto;
-}
-
 .grimoire-shell .timer {
 	width: 100%;
 	box-sizing: border-box;

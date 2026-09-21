@@ -35,27 +35,6 @@ if (document.getElementById("logs-container")) {
     setInterval(updateLogs, 1000);
 }
 
-const grimoireShell = document.querySelector(".grimoire-shell");
-const viewToggleButtons = document.querySelectorAll(".view-toggle");
-
-if (grimoireShell && viewToggleButtons.length > 0) {
-    viewToggleButtons.forEach(button => {
-        button.addEventListener("click", function() {
-            const view = button.dataset.view;
-            const isSeatingView = view === "seating";
-
-            grimoireShell.classList.toggle("view-timer", !isSeatingView);
-            grimoireShell.classList.toggle("view-seating", isSeatingView);
-
-            viewToggleButtons.forEach(toggleButton => {
-                const isActive = toggleButton === button;
-                toggleButton.classList.toggle("active", isActive);
-                toggleButton.setAttribute("aria-pressed", String(isActive));
-            });
-        });
-    });
-}
-
 function addSubmitHandler(formId, handler) {
     const form = document.getElementById(formId);
     if (form) {
