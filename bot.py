@@ -1100,7 +1100,7 @@ async def get_win_leaderboard(members):
                     traveller_evil_games + minion_games + demon_games AS total_games
                 FROM player_stats
                 WHERE townsfolk_games + outsider_games + traveller_good_games +
-                      traveller_evil_games + minion_games + demon_games >= 5
+                      traveller_evil_games + minion_games + demon_games >= 15
                 ORDER BY
                     (townsfolk_wins + outsider_wins + traveller_good_wins +
                     minion_wins + demon_wins + traveller_evil_wins)::float
@@ -1142,7 +1142,7 @@ async def get_good_leaderboard(members):
                     townsfolk_wins + outsider_wins + traveller_good_wins AS total_wins,
                     townsfolk_games + outsider_games + traveller_good_games AS total_games
                 FROM player_stats
-                WHERE townsfolk_games + outsider_games + traveller_good_games >= 5
+                WHERE townsfolk_games + outsider_games + traveller_good_games >= 15
                 ORDER BY
                     (townsfolk_wins + outsider_wins + traveller_good_wins)::float
                     /
@@ -1182,7 +1182,7 @@ async def get_evil_leaderboard(members):
                     minion_wins + demon_wins + traveller_evil_wins AS total_wins,
                     traveller_evil_games + minion_games + demon_games AS total_games
                 FROM player_stats
-                WHERE traveller_evil_games + minion_games + demon_games >= 5
+                WHERE traveller_evil_games + minion_games + demon_games >= 15
                 ORDER BY
                     (minion_wins + demon_wins + traveller_evil_wins)::float
                     /
@@ -1243,14 +1243,14 @@ class LeaderboardView(discord.ui.View):
         add_log(f"Selected leaderboard: {choice}")
         if choice == "overall":
             top_players = await get_win_leaderboard(self.members)
-            title = "Top 10 Players by Overall Win Rate (minimum 5 games)"
+            title = "Top 10 Players by Overall Win Rate (minimum 15 games)"
 
         elif choice == "good":
             top_players = await get_good_leaderboard(self.members)
-            title = "Top 10 Players by Good Win Rate (minimum 5 games)"
+            title = "Top 10 Players by Good Win Rate (minimum 15 games)"
         elif choice == "evil":
             top_players = await get_evil_leaderboard(self.members)
-            title = "Top 10 Players by Evil Win Rate (minimum 5 games)"
+            title = "Top 10 Players by Evil Win Rate (minimum 15 games)"
 
         add_log(f"Creating leaderboard embed for {title} with {len(top_players)} players")
         add_log(f"CHOICE: {choice}")
@@ -1287,7 +1287,7 @@ async def leaderboard(interaction: discord.Interaction):
 
     embed = await create_leaderboard_embed(
         top_players,
-        "Top 10 Players by Overall Win Rate (minimum 5 games)",
+        "Top 10 Players by Overall Win Rate (minimum 15 games)",
         members,
     )
 
