@@ -10,6 +10,7 @@
 <body>
     <nav class="page-navigation" aria-label="Page navigation">
         <button type="button" onclick="window.location.href='/'">Grimoire</button>
+        <button type="button" onclick="window.location.href='{{ url_for("log_stat_reminder") }}'">Log Stat Reminder</button>
     </nav>
     <header class="banner">
         <img src="{{ url_for('static', filename='carl.png') }}" alt="Clocktower Carl Banner">

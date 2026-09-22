@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clocktower Carl Stat Reminder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='carl.ico') }}">
+</head>
+<body>
+    <nav class="page-navigation" aria-label="Page navigation">
+        <button type="button" onclick="window.location.href='/'">Grimoire</button>
+        <button type="button" onclick="window.location.href='/dashboard'">Dashboard</button>
+    </nav>
+    <br>
+    <div class="stat-reminder">
+        <p id="hungry-message" class="hungry-message">Carl is hungry, join the discord server to log your stats with the bot!</p>
+        <br>
+        <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+        <img class="qrcode" src="{{ url_for('static', filename='qrcode.png') }}">
+    </div>
+</body>
+</html>

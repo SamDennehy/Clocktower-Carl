@@ -42,7 +42,8 @@ body {
 	border-bottom: 2px solid rgb(97, 31, 97);
 }
 
-.page-navigation button {
+.page-navigation button,
+.page-navigation a {
 	padding: 0.6rem 1rem;
 }
 
@@ -137,6 +138,36 @@ h1 {
 	letter-spacing: 0.12em;
 	line-height: 1;
 	text-shadow: 4px 4px 0 rgb(97, 31, 97);
+}
+
+.hungry-message {
+	margin: 0 0 1rem;
+	color: #ffffff;
+	font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+	font-size: clamp(2rem, 5vw, 4rem);
+	font-weight: 900;
+	letter-spacing: 0.12em;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	line-height: 1;
+	text-shadow: 4px 4px 0 rgb(97, 31, 97);
+	text-align: center;
+}
+
+.stat-reminder {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.qrcode {
+	display: flex;
+	justify-content: center;
+	margin: 0 auto;
+	width: 20vw;
+	height: 20vw;
 }
 
 .timer-carl {

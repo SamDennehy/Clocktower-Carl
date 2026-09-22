@@ -89,6 +89,10 @@ def dashboard_logout():
     session.pop('dashboard_authenticated', None)
     return redirect(url_for('home'))
 
+@app.route('/log_stat_reminder')
+def log_stat_reminder():
+    return render_template('log_stat_reminder.html')
+
 
 @app.route('/logs')
 @dashboard_required
