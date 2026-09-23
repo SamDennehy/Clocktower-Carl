@@ -5,6 +5,9 @@ from hmac import compare_digest
 import os
 import tempfile
 import time
+from role_descriptions import ROLE_DESCRIPTIONS
+from models import Script
+import json
 
 from dotenv import load_dotenv
 from flask import Flask, abort, redirect, render_template, request, session, url_for
@@ -35,6 +38,13 @@ DASHBOARD_ENDPOINTS = {
     'set_auto_react',
     'disable_auto_react',
 }
+CATEGORY_GROUPS = (
+    ("Townsfolk", bot.townsfolk),
+    ("Outsiders", bot.outsiders),
+    ("Minions", bot.minions),
+    ("Demons", bot.demons),
+    ("Travellers", bot.npcs),
+)
 
 
 def dashboard_required(view):
@@ -92,6 +102,35 @@ def dashboard_logout():
 @app.route('/log_stat_reminder')
 def log_stat_reminder():
     return render_template('log_stat_reminder.html')
+
+@app.route('/script')
+def script():
+    return render_template('script.html')
+
+@app.route('/build_script', methods=['POST'])
+def build_script():
+    script_text = request.form.get('script')
+    if not script_text:
+        return "No script provided.", 400
+
+    scriptJSON = json.loads(script_text)
+    script = Script()
+    script.set_name(scriptJSON[0]['name'])
+    script.set_id(scriptJSON[0]['id'])
+    script.set_author(scriptJSON[0]['author'])
+    characters = scriptJSON[1:]
+    for character in characters:
+        character_key = character.lower().replace(" ", "")
+        category = next(
+            (
+                category_name
+                for category_name, category_characters in CATEGORY_GROUPS
+                if character_key in category_characters
+            ),
+            "Other",
+        )
+        script.append_character(character, category)
+    return {"script": script.to_dict()}
 
 
 @app.route('/logs')

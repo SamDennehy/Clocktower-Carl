@@ -9,8 +9,10 @@
 </head>
 <body>
     <nav class="page-navigation" aria-label="Page navigation">
-        <!-- <button type="button" onclick="window.location.href='{{ url_for("log_stat_reminder") }}'">Log Stats Reminder</button> -->
+        <button type="button" onclick="window.location.href='/'">Grimoire</button>
+        <button type="button" onclick="window.location.href='/script'">Script</button>
         <button type="button" onclick="window.location.href='/dashboard'">Dashboard</button>
+        <!-- <button type="button" onclick="window.location.href='{{ url_for("log_stat_reminder") }}'">Log Stats Reminder</button> -->
     </nav>
     <main class="grimoire-shell">
         <section class="timer" aria-labelledby="timer-heading">
@@ -51,9 +53,10 @@
                     <div>
                         <p class="timer-label" id="seating-heading">PLAYER ORDER</p>
                         <p class="seating-help">Enter names clockwise, separated by commas.</p>
+                        <p class="seating-help">For travelers, add "[T]" beside the name of each traveler.</p>
                     </div>
                 </div>
-                <input type="text" id="player-names" name="players" autocomplete="off" placeholder="Dean,Sam,Ferdia,Seán..." required>
+                <input type="text" id="player-names" name="players" autocomplete="off" placeholder="Dean,Sam,Ferdia[T],Seán..." required>
                 <button type="submit">Display Seats</button>
             </form>
         </section>

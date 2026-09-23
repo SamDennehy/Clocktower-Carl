@@ -4,6 +4,7 @@ const carlFrameDurations = [200, 150, 90];
 const carlFrameOrder = [0, 1, 2, 1, 0];
 const carlIdleDuration = 30000;
 const timerCrazyDuration = 5000;
+const scriptStorageKey = "clocktowerScript";
 const audioToggleButton = document.getElementById("toggle-audio-button");
 let audioToggle = true;
 const screamingToggleButton = document.getElementById("toggle-screaming-button");
@@ -389,7 +390,22 @@ if (seatingForm) {
     function getSeatStatuses() {
         try {
             const savedStatuses = JSON.parse(localStorage.getItem(seatStatusStorageKey) || "[]");
-            return Array.isArray(savedStatuses) ? savedStatuses : [];
+            if (!Array.isArray(savedStatuses)) {
+                return [];
+            }
+
+            return savedStatuses.map(status => {
+                if (status === true) {
+                    return { dead: true, ghostVote: false };
+                }
+                if (status === "ghostVote") {
+                    return { dead: false, ghostVote: true };
+                }
+                return {
+                    dead: Boolean(status && status.dead),
+                    ghostVote: Boolean(status && status.ghostVote)
+                };
+            });
         } catch {
             return [];
         }
@@ -403,13 +419,23 @@ if (seatingForm) {
         const seatStatuses = getSeatStatuses();
         seating.innerHTML = "";
         names.forEach((name, index) => {
+            let isTraveler = false;
+            if (name.includes("[T]")) {
+                isTraveler = true;
+                name = name.replace("[T]", "").trim();
+            }
+
+
             const seat = document.createElement("li");
             const seatButton = document.createElement("button");
             const ghostVoteButton = document.createElement("button");
-            const hasGhostVote = seatStatuses[index] === "ghostVote";
-            const isDead = seatStatuses[index] === true;
+            const status = seatStatuses[index] || { dead: false, ghostVote: false };
+            const hasGhostVote = status.ghostVote;
+            const isDead = status.dead;
 
-            seat.className = "player-seat";
+            seat.className = isTraveler
+                ? "player-seat player-seat-traveler"
+                : "player-seat";
             seat.style.setProperty("--seat-angle", `${(index * 360) / names.length}deg`);
             
             seatButton.type = "button";
@@ -420,7 +446,8 @@ if (seatingForm) {
             seatButton.setAttribute("aria-label", `${name}: ${isDead ? "dead" : "alive"}. Toggle status`);
             seatButton.addEventListener("click", function() {
                 const statuses = getSeatStatuses();
-                statuses[index] = !statuses[index];
+                statuses[index] = statuses[index] || { dead: false, ghostVote: false };
+                statuses[index].dead = !statuses[index].dead;
                 saveSeatStatuses(statuses);
                 renderSeating(names);
             });
@@ -433,7 +460,8 @@ if (seatingForm) {
             ghostVoteButton.setAttribute("aria-label", `${name}: Ghost vote. Toggle status`);
             ghostVoteButton.addEventListener("click", function() {
                 const statuses = getSeatStatuses();
-                statuses[index] = statuses[index] === "ghostVote" ? false : "ghostVote";
+                statuses[index] = statuses[index] || { dead: false, ghostVote: false };
+                statuses[index].ghostVote = !statuses[index].ghostVote;
                 saveSeatStatuses(statuses);
                 renderSeating(names);
             });
@@ -455,7 +483,7 @@ if (seatingForm) {
         sessionStorage.setItem("playerNames", JSON.stringify(names));
         const seatStatuses = getSeatStatuses().slice(0, names.length);
         while (seatStatuses.length < names.length) {
-            seatStatuses.push("ghostVote");
+            seatStatuses.push({ dead: false, ghostVote: true });
         }
         saveSeatStatuses(seatStatuses);
         renderSeating(names);
@@ -466,5 +494,133 @@ if (seatingForm) {
     if (savedPlayerNames.length > 0) {
         playerNamesInput.value = savedPlayerNames.join(", ");
         renderSeating(savedPlayerNames);
+    }
+}
+
+async function handleScriptFormSubmit(event) {
+    event.preventDefault();
+
+    const scriptInput = document.getElementById("scriptInput");
+    const scriptContent = scriptInput.value.trim();
+
+    if (!scriptContent) {
+        return;
+    }
+
+    try {
+        const response = await fetch("/build_script", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({
+                script: scriptContent
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        localStorage.setItem(scriptStorageKey, JSON.stringify(data.script));
+        return data.script;
+    } catch (error) {
+        console.error("Error submitting script:", error);
+        return;
+    }
+}
+
+function renderScript(script) {
+    const scriptContainer = document.getElementById("script-container");
+    if (!scriptContainer) {
+        return;
+    }
+
+    const characters = Array.isArray(script.characters) ? script.characters : [];
+    const categoryOrder = ["Townsfolk", "Outsiders", "Minions", "Demons"];
+    const groupedCharacters = characters.reduce((groups, character) => {
+        const name = typeof character === "string"
+            ? character
+            : character.name || character.id || "Unknown character";
+        const category = typeof character === "string"
+            ? "Other"
+            : character.category || "Other";
+        const description = typeof character === "string"
+            ? "Description unavailable."
+            : character.description || "Description unavailable.";
+
+        if (!categoryOrder.includes(category)) {
+            return groups;
+        }
+
+        if (!groups[category]) {
+            groups[category] = [];
+        }
+        groups[category].push({ name, description });
+        return groups;
+    }, {});
+    const categoryColumns = [
+        ["Townsfolk"],
+        ["Outsiders", "Minions", "Demons"]
+    ];
+    const categoryMarkup = categoryColumns
+        .map(column => `
+            <div class="character-column">
+                ${column
+                    .filter(category => groupedCharacters[category])
+                    .map(category => `
+                        <section class="character-category category-${category.toLowerCase()}">
+                            <h3>${category}</h3>
+                            <div class="character-grid">
+                                ${groupedCharacters[category]
+                                    .map(({ name, description }) => `
+                                        <article class="character-entry">
+                                            <h4>${name}</h4>
+                                            <p>${description}</p>
+                                        </article>
+                                    `)
+                                    .join("")}
+                            </div>
+                        </section>
+                    `)
+                    .join("")}
+            </div>
+        `)
+        .join("");
+
+    scriptContainer.innerHTML = `
+        <h2>${script.name}</h2>
+        <div class="character-categories">${categoryMarkup}</div>
+    `;
+}
+
+async function fetchAndRenderScript() {
+    try {
+        const script = await handleScriptFormSubmit(new Event("submit", { cancelable: true }));
+        if (script) {
+            renderScript(script);
+        }
+    }
+    catch (error) {
+        console.error("Error fetching and rendering script:", error);
+    }
+}
+
+const scriptForm = document.getElementById("scriptForm");
+if (scriptForm) {
+    scriptForm.addEventListener("submit", function(event) {
+        event.preventDefault();
+        fetchAndRenderScript();
+    });
+
+    const savedScript = localStorage.getItem(scriptStorageKey);
+    if (savedScript) {
+        try {
+            renderScript(JSON.parse(savedScript));
+        } catch (error) {
+            localStorage.removeItem(scriptStorageKey);
+            console.error("Unable to restore saved script:", error);
+        }
     }
 }

@@ -350,6 +350,8 @@ h1 {
 }
 
 .player-seat-button {
+	position: relative;
+	z-index: 1;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -378,6 +380,26 @@ h1 {
 .player-seat-button:focus-visible {
 	outline: 3px solid #f7d774;
 	outline-offset: 4px;
+}
+
+.player-seat-traveler .player-seat-button {
+	border-color: rgba(250, 0, 137, 0.72);
+	background: rgba(250, 0, 137, 0.72);
+}
+
+.player-seat-traveler .player-seat-button:hover {
+	background: rgba(191, 1, 105, 0.72);
+}
+
+.player-seat-traveler .player-seat-button.dead {
+	border-color: #010101;
+	color: rgb(132, 131, 131);
+	background: rgba(191, 1, 105, 0.72);
+	filter: grayscale(0.55);
+}
+
+.player-seat-traveler .player-seat-button:focus-visible {
+	outline-color: #f7d774;
 }
 
 .panel {
@@ -573,6 +595,7 @@ h1 {
 		transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(calc(-1 * min(38vw, 195px, 26vh))) rotate(calc(-1 * var(--seat-angle)));
 	}
 
+
 	.player-seat-button {
 		width: 60px;
 		height: 60px;
@@ -583,7 +606,7 @@ h1 {
 		width: 32px;
 		height: 32px;
 		font-size: 0.65rem;
-		transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(27px) rotate(calc(-1 * var(--seat-angle)));
+		transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(52px) rotate(calc(-1 * var(--seat-angle)));
 	}
 
 	.player-seating::before {
@@ -662,6 +685,7 @@ button:hover {
 	position: absolute;
 	top: 50%;
 	left: 50%;
+	z-index: 2;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -678,7 +702,7 @@ button:hover {
 	font-weight: 700;
 	text-shadow: 2px 2px 2px #111;
 	cursor: pointer;
-	transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(55px) rotate(calc(-1 * var(--seat-angle)));
+	transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(72px) rotate(calc(-1 * var(--seat-angle)));
 }
 
 .ghost-vote-button.active {
@@ -686,6 +710,115 @@ button:hover {
 	color: rgb(132, 131, 131);
 	background: rgba(247, 215, 116, 0.8);
 	filter: grayscale(0.55);
+}
+
+.ghost-vote-button.active:hover {
+	background: rgb(164, 142, 76);
+}
+
+.script-container {
+	padding: 0.75rem 1rem;
+	background-color: rgba(128, 47, 128, 0.1);
+	border-radius: 10px;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	text-align: center;
+	justify-content: center;
+}
+
+.script-container h2 {
+	margin: 0 0 0.35rem;
+	font-size: 1.35rem;
+}
+
+.character-categories {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 1rem;
+	width: 100%;
+	margin-top: 0.5rem;
+	text-align: left;
+}
+
+.character-column {
+	min-width: 0;
+}
+
+.character-category {
+	--category-color: #f7d774;
+	--category-surface: rgba(0, 0, 0, 0.14);
+	min-width: 0;
+	margin-top: 0;
+	padding-top: 0.5rem;
+	border-top: 3px solid var(--category-color);
+}
+
+.character-category h3 {
+	margin: 0 0 0.4rem;
+	color: var(--category-color);
+	font-size: 1.05rem;
+	text-transform: uppercase;
+}
+
+.category-townsfolk {
+	--category-color: #1063a3;
+	--category-surface: rgba(35, 78, 112, 0.2);
+}
+
+.category-outsiders {
+	--category-color: #76c7ea;
+	--category-surface: rgba(118, 199, 234, 0.18);
+}
+
+.category-minions {
+	--category-color: #e8923a;
+	--category-surface: rgba(232, 146, 58, 0.18);
+}
+
+.category-demons {
+	--category-color: #d9534f;
+	--category-surface: rgba(217, 83, 79, 0.18);
+}
+
+.character-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.35rem;
+}
+
+.character-entry {
+	padding: 0.4rem 0.5rem;
+	border-left: 3px solid var(--category-color);
+	background: var(--category-surface);
+}
+
+.character-entry h4,
+.character-entry p {
+	margin: 0;
+}
+
+.character-entry h4 {
+	margin-bottom: 0.15rem;
+	font-size: 0.85rem;
+	text-transform: capitalize;
+}
+
+.character-entry p {
+	color: #f0e8f2;
+	font-size: 0.75rem;
+	line-height: 1.2;
+}
+
+@media (max-width: 700px) {
+	.character-categories {
+		grid-template-columns: 1fr;
+	}
+
+	.character-grid {
+		grid-template-columns: 1fr;
+	}
 }
 
 

@@ -14,12 +14,17 @@
         <button type="button" onclick="window.location.href='/dashboard'">Dashboard</button>
         <!-- <button type="button" onclick="window.location.href='{{ url_for("log_stat_reminder") }}'">Log Stats Reminder</button> -->
     </nav>
-    <br>
-    <div class="stat-reminder">
-        <p id="hungry-message" class="hungry-message">Carl is hungry, join the discord server to log your stats with the bot!</p>
-        <br>
-        <script src="{{ url_for('static', filename='scripts.js') }}"></script>
-        <img class="qrcode" src="{{ url_for('static', filename='qrcode.png') }}">
+    <div id="script-container" class="script-container">
+        <h1>Clocktower Carl Script</h1>
+        <p>This is the script page for Clocktower Carl. You can add your script content here.</p>
+        <!-- Add your script content here -->
     </div>
+
+    <form id="scriptForm">
+        <label for="scriptInput">Paste your script JSON here:</label>
+        <textarea id="scriptInput" required></textarea>
+        <button type="submit">Submit</button>
+    </form>
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
 </body>
 </html>
