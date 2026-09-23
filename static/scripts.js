@@ -6,12 +6,22 @@ const carlIdleDuration = 30000;
 const timerCrazyDuration = 5000;
 const audioToggleButton = document.getElementById("toggle-audio-button");
 let audioToggle = true;
+const screamingToggleButton = document.getElementById("toggle-screaming-button");
+let screamingToggle = true;
 let timerCrazyTimeout;
 
 if (audioToggleButton) {
     audioToggleButton.addEventListener("click", function() {
         audioToggle = !audioToggle;
         audioToggleButton.textContent = audioToggle ? "Audio On" : "Audio Off";
+        }
+    )
+};
+
+if (screamingToggleButton) {
+    screamingToggleButton.addEventListener("click", function() {
+        screamingToggle = !screamingToggle;
+        screamingToggleButton.textContent = screamingToggle ? "Screaming On" : "Screaming Off";
         }
     )
 };
@@ -228,7 +238,7 @@ function startTimer(endTime) {
                     }, timerCrazyDuration);
 
                     var screamingAudio = document.getElementById("screaming-audio");
-                    if (screamingAudio && audioToggle) {
+                    if (screamingAudio && audioToggle && screamingToggle) {
                         screamingAudio.currentTime = 0;
                         screamingAudio.play();
                     }
@@ -395,10 +405,13 @@ if (seatingForm) {
         names.forEach((name, index) => {
             const seat = document.createElement("li");
             const seatButton = document.createElement("button");
+            const ghostVoteButton = document.createElement("button");
+            const hasGhostVote = seatStatuses[index] === "ghostVote";
             const isDead = seatStatuses[index] === true;
 
             seat.className = "player-seat";
             seat.style.setProperty("--seat-angle", `${(index * 360) / names.length}deg`);
+            
             seatButton.type = "button";
             seatButton.className = "player-seat-button";
             seatButton.textContent = name;
@@ -411,7 +424,22 @@ if (seatingForm) {
                 saveSeatStatuses(statuses);
                 renderSeating(names);
             });
+
+            ghostVoteButton.type = "button";
+            ghostVoteButton.className = "ghost-vote-button";
+            ghostVoteButton.textContent = "👻";
+            ghostVoteButton.classList.toggle("active", hasGhostVote);
+            ghostVoteButton.setAttribute("aria-pressed", String(hasGhostVote));
+            ghostVoteButton.setAttribute("aria-label", `${name}: Ghost vote. Toggle status`);
+            ghostVoteButton.addEventListener("click", function() {
+                const statuses = getSeatStatuses();
+                statuses[index] = statuses[index] === "ghostVote" ? false : "ghostVote";
+                saveSeatStatuses(statuses);
+                renderSeating(names);
+            });
+
             seat.appendChild(seatButton);
+            seat.appendChild(ghostVoteButton);
             seating.appendChild(seat);
         });
     }
@@ -427,7 +455,7 @@ if (seatingForm) {
         sessionStorage.setItem("playerNames", JSON.stringify(names));
         const seatStatuses = getSeatStatuses().slice(0, names.length);
         while (seatStatuses.length < names.length) {
-            seatStatuses.push(false);
+            seatStatuses.push("ghostVote");
         }
         saveSeatStatuses(seatStatuses);
         renderSeating(names);

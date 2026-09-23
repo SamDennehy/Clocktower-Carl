@@ -579,6 +579,13 @@ h1 {
 		font-size: 0.75rem;
 	}
 
+	.ghost-vote-button {
+		width: 32px;
+		height: 32px;
+		font-size: 0.65rem;
+		transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(27px) rotate(calc(-1 * var(--seat-angle)));
+	}
+
 	.player-seating::before {
 		width: 75px;
 		height: 75px;
@@ -650,3 +657,35 @@ button {
 button:hover {
 	background-color: rgb(97, 31, 97);
 }
+
+.ghost-vote-button {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	box-sizing: border-box;
+	padding: 0.2rem;
+	border: 1px solid #010101;
+	border-radius: 10px;
+	background: rgba(33, 33, 33, 0.72);
+	color: inherit;
+	font: inherit;
+	font-size: 0.75rem;
+	font-weight: 700;
+	text-shadow: 2px 2px 2px #111;
+	cursor: pointer;
+	transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(55px) rotate(calc(-1 * var(--seat-angle)));
+}
+
+.ghost-vote-button.active {
+	border-color: #010101;
+	color: rgb(132, 131, 131);
+	background: rgba(247, 215, 116, 0.8);
+	filter: grayscale(0.55);
+}
+
+
