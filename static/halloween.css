@@ -1,0 +1,136 @@
+@import url("styles.css");
+
+html,
+body {
+	background-color: #170d1b;
+	color: #fff4df;
+}
+
+body {
+	text-shadow: 2px 2px 2px #050307;
+}
+
+.banner,
+.grimoire-banner,
+.grimoire-shell {
+	background-color: #241027;
+}
+
+.banner,
+.grimoire-banner {
+	border-color: #f47b20;
+}
+
+.page-navigation {
+	background-color: rgba(54, 20, 45, 0.95);
+	border-bottom-color: #a83f16;
+}
+
+.watching-message,
+.hungry-message {
+	color: #ffb000;
+	text-shadow: 4px 4px 0 #6d1d2d;
+}
+
+.timer-carl {
+	border-color: #f47b20;
+	background: rgba(54, 20, 45, 0.85);
+}
+
+.timer-label,
+#timer-display {
+	color: #fff4df;
+	text-shadow: 3px 3px 3px #050307;
+}
+
+.grimoire-shell label {
+	color: #ffd18a;
+}
+
+.grimoire-shell input,
+.quantity_selectors input {
+	border-color: #a83f16;
+	background: rgba(255, 244, 223, 0.12);
+	color: #fff4df;
+}
+
+.grimoire-shell button,
+button,
+.page-navigation button {
+	background-color: #d95716;
+	color: #fff4df;
+}
+
+.grimoire-shell button:hover,
+button:hover,
+.page-navigation button:hover {
+	background-color: #f47b20;
+}
+
+.player-seating {
+	border-color: rgba(244, 123, 32, 0.75);
+	background: rgba(54, 20, 45, 0.35);
+}
+
+.player-seating::before {
+	border-color: rgba(255, 244, 223, 0.4);
+}
+
+.player-seat-button {
+	border-color: #d95716;
+	background: rgba(255, 244, 223, 0.12);
+	color: #fff4df;
+	text-shadow: 2px 2px 2px #050307;
+}
+
+.player-seat-button:focus-visible,
+.player-seat-traveler .player-seat-button:focus-visible {
+	outline-color: #ffb000;
+}
+
+.panel-left {
+	border-color: #d95716;
+}
+
+.log-window {
+	background-color: rgba(5, 3, 7, 0.65);
+	border-color: rgba(255, 244, 223, 0.2);
+}
+
+.quantity_selectors label,
+.preview-role span {
+	color: #ffd18a;
+}
+
+.button-row button {
+	background: #f47b20;
+	color: #170d1b;
+}
+
+.button-row button:hover {
+	background: #ffb000;
+}
+
+.preview-group,
+.preview-role {
+	border-color: rgba(244, 123, 32, 0.3);
+	background: rgba(255, 244, 223, 0.06);
+}
+
+.preview-group-title {
+	color: #ffb000;
+}
+
+.character-entry {
+	background: rgba(54, 20, 45, 0.25);
+}
+
+.character-entry p {
+	color: #ffe0b3;
+}
+
+@media (max-width: 900px) {
+	.panel-left {
+		border-bottom-color: rgba(255, 244, 223, 0.16);
+	}
+}

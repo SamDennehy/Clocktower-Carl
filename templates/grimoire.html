@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clocktower Carl Grimoire</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+        <link rel="stylesheet" id="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
      <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='carl.ico') }}">
 </head>
 <body>
@@ -25,11 +25,14 @@
                 Your browser does not support the audio element.
             </audio>
             <p id="watching-message" class="watching-message">CARL IS WATCHING</p>
-            <div class="timer-carl">
-                <img class="timer-carl-image timer-carl-image-one" src="{{ url_for('static', filename='carl.png') }}" alt="">
-                <img class="timer-carl-image timer-carl-image-two" src="{{ url_for('static', filename='carl2.png') }}" alt="">
-                <img class="timer-carl-image timer-carl-image-three" src="{{ url_for('static', filename='carl3.png') }}" alt="">
-                <img class="timer-carl-crazy" src="{{ url_for('static', filename='carlcrazy.png') }}" alt="">
+            <div class="timer-carl-stage">
+                <div id="timer-hats" class="timer-hats" aria-hidden="true"></div>
+                <div class="timer-carl">
+                    <img class="timer-carl-image timer-carl-image-one" src="{{ url_for('static', filename='carl.png') }}" alt="">
+                    <img class="timer-carl-image timer-carl-image-two" src="{{ url_for('static', filename='carl2.png') }}" alt="">
+                    <img class="timer-carl-image timer-carl-image-three" src="{{ url_for('static', filename='carl3.png') }}" alt="">
+                    <img class="timer-carl-crazy" src="{{ url_for('static', filename='carlcrazy.png') }}" alt="">
+                </div>
             </div>
             <div class="timer-content">
                 <p class="timer-label" id="timer-heading">TIME REMAINING</p>

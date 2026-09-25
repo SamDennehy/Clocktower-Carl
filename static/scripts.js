@@ -189,13 +189,8 @@ function setTimer(event) {
         console.error("Invalid timer duration");
         return;
     }
-    
-    if (durationSeconds === 2809) {
-        displayEasterEgg("Happy Birthday Dean!");
-        return;
-    }
-    else if (durationSeconds === 67) {
-        displayEasterEgg("67");
+
+    if (displayEasterEgg(durationSeconds)) {
         return;
     }
     else {
@@ -260,13 +255,42 @@ function startTimer(endTime) {
     timerInterval = setInterval(updateTimerDisplay, 250);
 }
 
-function displayEasterEgg(message) {
+function displayEasterEgg(key) {
     const easterEgg = document.getElementById("watching-message");
-    if (easterEgg) {
-        easterEgg.textContent = message;
+    const stylesheet = document.getElementById("stylesheet");
+    const hatdiv = document.getElementById("timer-hats");
+    switch (key) {
+        case 2809:
+            easterEgg.textContent = "Happy Birthday Dean!";
+            stylesheet.href = "/static/styles.css";
+            launchConfetti();
+            hatdiv.innerHTML = `
+                <img class="timer-hat" src="/static/hats/partyhat.png" alt="">
+            `;
+            return true;
+        case 67:
+            easterEgg.textContent = "67";
+            hatdiv.innerHTML = "";
+            return true;
+        case 3110:
+            easterEgg.textContent = "Happy Halloween!";
+            stylesheet.href = "/static/halloween.css";
+            hatdiv.innerHTML = `
+                <img class="timer-hat" src="/static/hats/witchhat.png" alt="">
+            `;
+            return true;
+        case 2512:
+            easterEgg.textContent = "Merry Christmas!";
+            stylesheet.href = "/static/christmas.css";
+            hatdiv.innerHTML = `
+                <img class="timer-hat" src="/static/hats/santahat.png" alt="">
+            `;
+            return true;
+        default:
+            easterEgg.textContent = "CARL IS WATCHING";
+            hatdiv.innerHTML = "";
+            return false;
     }
-
-    launchConfetti();
 }
 
 function launchConfetti() {

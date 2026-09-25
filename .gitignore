@@ -8,3 +8,4 @@ data/*.db
 generated_script.json
 speech.mp3
 roles-combined.json
+compare.py
