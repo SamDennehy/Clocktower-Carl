@@ -379,6 +379,8 @@ h1 {
 }
 
 .player-seat-button {
+	position: relative;
+	z-index: 1;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -612,7 +614,7 @@ h1 {
 		width: 32px;
 		height: 32px;
 		font-size: 0.65rem;
-		transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(27px) rotate(calc(-1 * var(--seat-angle)));
+		transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(52px) rotate(calc(-1 * var(--seat-angle)));
 	}
 
 	.player-seating::before {
@@ -711,7 +713,7 @@ button:hover {
 	font-weight: 700;
 	text-shadow: 2px 2px 2px #111;
 	cursor: pointer;
-	transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(55px) rotate(calc(-1 * var(--seat-angle)));
+	transform: translate(-50%, -50%) rotate(var(--seat-angle)) translateY(72px) rotate(calc(-1 * var(--seat-angle)));
 }
 
 .ghost-vote-button.active {
@@ -723,6 +725,26 @@ button:hover {
 
 .ghost-vote-button.active:hover {
 	background: rgb(164, 142, 76);
+}
+
+.player-seat-traveler .player-seat-button {
+	border-color: rgba(250, 0, 137, 0.72);
+	background: rgba(250, 0, 137, 0.72);
+}
+
+.player-seat-traveler .player-seat-button:hover {
+	background: rgba(191, 1, 105, 0.72);
+}
+
+.player-seat-traveler .player-seat-button.dead {
+	border-color: #010101;
+	color: rgb(132, 131, 131);
+	background: rgba(191, 1, 105, 0.72);
+	filter: grayscale(0.55);
+}
+
+.player-seat-traveler .player-seat-button:focus-visible {
+	outline-color: #f7d774;
 }
 
 .script-container {

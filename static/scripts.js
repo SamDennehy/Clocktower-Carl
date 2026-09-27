@@ -426,14 +426,19 @@ if (seatingForm) {
     function renderSeating(names) {
         const seatStatuses = getSeatStatuses();
         seating.innerHTML = "";
-        names.forEach((name, index) => {
+        names.forEach((rawName, index) => {
+            const isTraveler = rawName.includes("[T]");
+            const name = rawName.replace("[T]", "").trim();
             const seat = document.createElement("li");
             const seatButton = document.createElement("button");
             const ghostVoteButton = document.createElement("button");
-            const hasGhostVote = seatStatuses[index] === "ghostVote";
-            const isDead = seatStatuses[index] === true;
+            const status = seatStatuses[index];
+            const hasGhostVote = status === "ghostVote" || status?.ghostVote === true;
+            const isDead = status === true || status?.dead === true;
 
-            seat.className = "player-seat";
+            seat.className = isTraveler
+                ? "player-seat player-seat-traveler"
+                : "player-seat";
             seat.style.setProperty("--seat-angle", `${(index * 360) / names.length}deg`);
             
             seatButton.type = "button";
@@ -444,7 +449,7 @@ if (seatingForm) {
             seatButton.setAttribute("aria-label", `${name}: ${isDead ? "dead" : "alive"}. Toggle status`);
             seatButton.addEventListener("click", function() {
                 const statuses = getSeatStatuses();
-                statuses[index] = !statuses[index];
+                statuses[index] = { dead: !isDead, ghostVote: hasGhostVote };
                 saveSeatStatuses(statuses);
                 renderSeating(names);
             });
@@ -457,7 +462,7 @@ if (seatingForm) {
             ghostVoteButton.setAttribute("aria-label", `${name}: Ghost vote. Toggle status`);
             ghostVoteButton.addEventListener("click", function() {
                 const statuses = getSeatStatuses();
-                statuses[index] = statuses[index] === "ghostVote" ? false : "ghostVote";
+                statuses[index] = { dead: isDead, ghostVote: !hasGhostVote };
                 saveSeatStatuses(statuses);
                 renderSeating(names);
             });
@@ -479,7 +484,7 @@ if (seatingForm) {
         sessionStorage.setItem("playerNames", JSON.stringify(names));
         const seatStatuses = getSeatStatuses().slice(0, names.length);
         while (seatStatuses.length < names.length) {
-            seatStatuses.push("ghostVote");
+            seatStatuses.push({ dead: false, ghostVote: true });
         }
         saveSeatStatuses(seatStatuses);
         renderSeating(names);
