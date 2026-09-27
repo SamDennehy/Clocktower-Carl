@@ -862,3 +862,52 @@ button:hover {
 	transform: translate(-50%, -130%);
 }
 
+.character-count-container {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	column-gap: 1rem;
+	row-gap: 1rem;
+	margin-top: 0.5rem;
+}
+
+.character-count-container p {
+	margin: 0;
+}
+
+.townsfolk-count{
+	color: #1063a3;
+	font-size: 1.5rem;
+}
+.outsider-count{
+	color: #76c7ea;
+	font-size: 1.5rem;
+}
+.minion-count{
+	color: #e8923a;
+	font-size: 1.5rem;
+}
+.demon-count{
+	color: #f80e06;
+	font-size: 1.5rem;
+}
+.traveler-count{
+	color: #fa0089;
+	font-size: 1.5rem;
+}
+.player-count{
+	color: #f7d774;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-basis: 100%;
+	font-size: 1.5rem;
+}
+.need-travelers-message {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #fa0089;
+	flex-basis: 100%;
+	font-size: 1.5rem;
+}

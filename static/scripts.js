@@ -409,6 +409,7 @@ if (seatingForm) {
     const playerNamesInput = document.getElementById("player-names");
     const seating = document.getElementById("player-seating");
     const seatStatusStorageKey = "playerSeatStatuses";
+    const characterCountStorageKey = "characterCounts";
 
     function getSeatStatuses() {
         try {
@@ -426,15 +427,20 @@ if (seatingForm) {
     function renderSeating(names) {
         const seatStatuses = getSeatStatuses();
         seating.innerHTML = "";
+        let travelerCount = 0;
         names.forEach((rawName, index) => {
-            const isTraveler = rawName.includes("[T]");
-            const name = rawName.replace("[T]", "").trim();
+            const isTraveler = rawName.includes("[Tr]");
+            const name = rawName.replace("[Tr]", "").trim();
             const seat = document.createElement("li");
             const seatButton = document.createElement("button");
             const ghostVoteButton = document.createElement("button");
             const status = seatStatuses[index];
             const hasGhostVote = status === "ghostVote" || status?.ghostVote === true;
             const isDead = status === true || status?.dead === true;
+
+            if (isTraveler) {
+                travelerCount += 1;
+            }
 
             seat.className = isTraveler
                 ? "player-seat player-seat-traveler"
@@ -488,6 +494,11 @@ if (seatingForm) {
         }
         saveSeatStatuses(seatStatuses);
         renderSeating(names);
+
+        calculateAndUpdateCharacterCount(
+            getPlayerCount(names),
+            getTravelerCount(names)
+        );
     });
 
     const savedPlayerNames = JSON.parse(sessionStorage.getItem("playerNames") || "[]");
@@ -496,4 +507,94 @@ if (seatingForm) {
         playerNamesInput.value = savedPlayerNames.join(", ");
         renderSeating(savedPlayerNames);
     }
+
+    const savedCharacterCounts = localStorage.getItem(characterCountStorageKey);
+    if (savedCharacterCounts) {
+        try {
+            updateCharacterCount(JSON.parse(savedCharacterCounts), getPlayerCount(savedPlayerNames), getTravelerCount(savedPlayerNames));
+        } catch {
+            localStorage.removeItem(characterCountStorageKey);
+        }
+    } else if (savedPlayerNames.length > 0) {
+        calculateAndUpdateCharacterCount(
+            getPlayerCount(savedPlayerNames),
+            getTravelerCount(savedPlayerNames)
+        );
+    }
+}
+
+function getPlayerCount(names) {
+    return names.filter(name => !name.includes("[Tr]")).length;
+}
+
+function getTravelerCount(names) {
+    return names.filter(name => name.includes("[Tr]")).length;
+}
+
+function calculateCharacterCount(playerCount, travelerCount) {
+    let gameType = "invalid";
+    if (playerCount > 6) {
+        gameType = "standard";
+    }
+    else if (playerCount > 4) {
+        gameType = "teensyville";
+    }
+
+    let townsfolk = 0
+    let outsiders = 0
+    let minions = 0
+    let demons = 0
+    let travelers = 0
+    let needTravelers = false
+
+    if (gameType === "standard") {
+        if (playerCount > 15) {
+            playerCount = 15;
+            needTravelers = true;
+        }
+        demons = 1;
+        minions = Math.floor((playerCount - 1) / 3) - 1;
+        outsiders = (playerCount - 1) % 3;
+        townsfolk = playerCount - outsiders - minions - demons;
+        travelers = travelerCount || 0;
+    }
+
+    if (gameType === "teensyville") {
+        demons = 1;
+        minions = 1;
+        townsfolk = 3;
+        outsiders = playerCount == 5 ? 0 : 1;
+        travelers = travelerCount || 0;
+    }
+    return {
+        townsfolk: townsfolk,
+        outsiders: outsiders,
+        minions: minions,
+        demons: demons,
+        travelers: travelers,
+        needTravelers: needTravelers
+    }
+}
+
+function updateCharacterCount(characterCountDict, playerCount, travelerCount) {
+    const characterCountContainer = document.querySelector(".character-count-container");
+    if (!characterCountContainer) {
+        return;
+    }
+
+    characterCountContainer.innerHTML = `
+        <p class="player-count">Players: ${playerCount + travelerCount}</p>
+        <p class="townsfolk-count">T: ${characterCountDict.townsfolk}</p>
+        <p class="outsider-count">O: ${characterCountDict.outsiders}</p>
+        <p class="minion-count">M: ${characterCountDict.minions}</p>
+        <p class="demon-count">D: ${characterCountDict.demons}</p>
+        <p class="traveler-count">Tr: ${characterCountDict.travelers}</p>
+        <p class="need-travelers-message">${characterCountDict.needTravelers ? "Travelers required in order to proceed!" : ""}</p>
+    `;
+}
+
+function calculateAndUpdateCharacterCount(playerCount, travelerCount) {
+    const characterCountDict = calculateCharacterCount(playerCount, travelerCount);
+    localStorage.setItem("characterCounts", JSON.stringify(characterCountDict));
+    updateCharacterCount(characterCountDict, playerCount, travelerCount);
 }
