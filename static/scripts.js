@@ -493,8 +493,7 @@ if (seatingForm) {
             .map(name => name.trim())
             .filter(Boolean);
 
-        const triggerName = "sam";
-        if (names.includes(triggerName.toLowerCase())) {
+        if (names.includes("sam") || names.includes("Sam") || names.includes("SAM")) {
             displayEasterEgg(2809);
         }
         sessionStorage.setItem("playerNames", JSON.stringify(names));
