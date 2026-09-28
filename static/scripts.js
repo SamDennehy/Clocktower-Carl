@@ -433,10 +433,6 @@ if (seatingForm) {
         const seatStatuses = getSeatStatuses();
         seating.innerHTML = "";
         let travelerCount = 0;
-        const triggerName = "sam";
-        if (names.includes(triggerName.toLowerCase())) {
-            displayEasterEgg(2809);
-        }
         names.forEach((rawName, index) => {
             const isTraveler = rawName.includes("[Tr]");
             const name = rawName.replace("[Tr]", "").trim();
@@ -497,6 +493,10 @@ if (seatingForm) {
             .map(name => name.trim())
             .filter(Boolean);
 
+        const triggerName = "sam";
+        if (names.includes(triggerName.toLowerCase())) {
+            displayEasterEgg(2809);
+        }
         sessionStorage.setItem("playerNames", JSON.stringify(names));
         const seatStatuses = getSeatStatuses().slice(0, names.length);
         while (seatStatuses.length < names.length) {
