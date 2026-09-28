@@ -260,12 +260,17 @@ function displayEasterEgg(key) {
     const hatdiv = document.getElementById("timer-hats");
     switch (key) {
         case 2809:
-            easterEgg.textContent = "Happy Birthday Dean!";
+            easterEgg.textContent = "🏳️‍🌈Happy Birthday Dean!🏳️‍🌈";
             stylesheet.href = "/static/styles.css";
-            launchConfetti();
             hatdiv.innerHTML = `
                 <img class="timer-hat" src="/static/hats/partyhat.png" alt="">
             `;
+            launchConfetti();
+            const ymcaAudio = document.getElementById("ymca-audio");
+            if (ymcaAudio && audioToggle) {
+                ymcaAudio.currentTime = 0;
+                ymcaAudio.play();
+            }
             return true;
         case 67:
             easterEgg.textContent = "67";
