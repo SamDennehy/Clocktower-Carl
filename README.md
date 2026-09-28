@@ -8,12 +8,14 @@ Clocktower Carl is an unofficial, community-created project. It is not affiliate
 
 *Blood on the Clocktower* and related names, characters, and artwork belong to their respective owners. This project is intended for personal and community use.
 
+This project's web application portion is not intended to compete with or replace any official grimoire applications but instead to be used alongside official grimoire apps to display certain information to players while keeping character assignments secret.
+
 ## Features
 
-- Generate scripts for supported *Blood on the Clocktower* editions and custom scripts
+- Generate random scripts for supported *Blood on the Clocktower* editions and custom scripts
 - Use interactive Discord menus for alignment, character type, script, and game-result inputs
 - Record and display player statistics and win-rate leaderboards
-- Run a browser-based Grimoire with timers, seating, and script information
+- Browser based display of timer and seating arrangement
 - Send messages from the dashboard
 - Join and leave Discord voice channels
 - Generate text-to-speech audio and play MP3 files in voice channels
@@ -68,7 +70,6 @@ The web dashboard is served by Flask. The dashboard includes protected controls 
 - `templates/` - Web dashboard and Grimoire pages
 - `static/` - Stylesheets, JavaScript, and image/audio assets
 - `models.py` - Script data model
-- `role_descriptions.py` - Role descriptions used by the bot
 
 ## Disclaimer
 
