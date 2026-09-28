@@ -509,12 +509,12 @@ if (seatingForm) {
         renderSeating(savedPlayerNames);
     }
 
-    const savedCharacterCounts = localStorage.getItem(characterCountStorageKey);
+    const savedCharacterCounts = sessionStorage.getItem(characterCountStorageKey);
     if (savedCharacterCounts) {
         try {
             updateCharacterCount(JSON.parse(savedCharacterCounts), getPlayerCount(savedPlayerNames), getTravelerCount(savedPlayerNames));
         } catch {
-            localStorage.removeItem(characterCountStorageKey);
+            sessionStorage.removeItem(characterCountStorageKey);
         }
     } else if (savedPlayerNames.length > 0) {
         calculateAndUpdateCharacterCount(
@@ -596,6 +596,6 @@ function updateCharacterCount(characterCountDict, playerCount, travelerCount) {
 
 function calculateAndUpdateCharacterCount(playerCount, travelerCount) {
     const characterCountDict = calculateCharacterCount(playerCount, travelerCount);
-    localStorage.setItem("characterCounts", JSON.stringify(characterCountDict));
+    sessionStorage.setItem("characterCounts", JSON.stringify(characterCountDict));
     updateCharacterCount(characterCountDict, playerCount, travelerCount);
 }
