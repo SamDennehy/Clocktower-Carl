@@ -2,7 +2,7 @@ let timerInterval;
 let confettiAnimationFrame;
 const carlFrameDurations = [200, 150, 90];
 const carlFrameOrder = [0, 1, 2, 1, 0];
-const carlIdleDuration = 30000;
+const carlIdleDuration = 25000;
 const timerCrazyDuration = 5000;
 const audioToggleButton = document.getElementById("toggle-audio-button");
 let audioToggle = true;
@@ -433,6 +433,10 @@ if (seatingForm) {
         const seatStatuses = getSeatStatuses();
         seating.innerHTML = "";
         let travelerCount = 0;
+        const triggerName = "sam";
+        if (names.includes(triggerName.toLowerCase())) {
+            displayEasterEgg(2809);
+        }
         names.forEach((rawName, index) => {
             const isTraveler = rawName.includes("[Tr]");
             const name = rawName.replace("[Tr]", "").trim();
