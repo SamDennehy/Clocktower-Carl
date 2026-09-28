@@ -464,6 +464,7 @@ if (seatingForm) {
             ghostVoteButton.className = "ghost-vote-button";
             ghostVoteButton.textContent = "👻";
             ghostVoteButton.classList.toggle("active", hasGhostVote);
+            ghostVoteButton.classList.toggle("dead", !hasGhostVote);
             ghostVoteButton.setAttribute("aria-pressed", String(hasGhostVote));
             ghostVoteButton.setAttribute("aria-label", `${name}: Ghost vote. Toggle status`);
             ghostVoteButton.addEventListener("click", function() {

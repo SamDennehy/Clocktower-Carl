@@ -402,7 +402,7 @@ h1 {
 .player-seat-button.dead {
 	border-color: #010101;
 	color: rgb(132, 131, 131);
-	background: rgba(33, 33, 33, 0.72);
+	background: rgba(10, 10, 10, 0.88);
 	filter: grayscale(0.55);
 }
 
@@ -725,6 +725,15 @@ button:hover {
 
 .ghost-vote-button.active:hover {
 	background: rgb(164, 142, 76);
+}
+
+.ghost-vote-button.dead {
+	background: rgba(10, 10, 10, 0.88);
+	filter: grayscale(0.55);
+}
+
+.ghost-vote-button.dead:hover {
+	background: rgba(10, 10, 10, 0.88);
 }
 
 .player-seat-traveler .player-seat-button {
