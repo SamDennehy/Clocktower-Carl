@@ -9,6 +9,13 @@ let audioToggle = true;
 const screamingToggleButton = document.getElementById("toggle-screaming-button");
 let screamingToggle = true;
 let timerCrazyTimeout;
+const talkingButton = document.getElementById("talking-button");
+
+talkingButton.addEventListener("click", function() {
+    const isTalking = talkingButton.getAttribute("aria-pressed") === "true";
+    talkingButton.setAttribute("aria-pressed", !isTalking);
+    talkingButton.textContent = !isTalking ? "You must have permission from the stroyteller to speak" : "Everybody is free to speak publicly or privately";
+});
 
 if (audioToggleButton) {
     audioToggleButton.addEventListener("click", function() {
@@ -472,6 +479,10 @@ if (seatingForm) {
             ghostVoteButton.classList.toggle("dead", !hasGhostVote);
             ghostVoteButton.setAttribute("aria-pressed", String(hasGhostVote));
             ghostVoteButton.setAttribute("aria-label", `${name}: Ghost vote. Toggle status`);
+            const statuses = getSeatStatuses();
+            if (!statuses[index].dead) {
+                ghostVoteButton.style.visibility = "hidden";
+            }
             ghostVoteButton.addEventListener("click", function() {
                 const statuses = getSeatStatuses();
                 statuses[index] = { dead: isDead, ghostVote: !hasGhostVote };
@@ -604,3 +615,5 @@ function calculateAndUpdateCharacterCount(playerCount, travelerCount) {
     sessionStorage.setItem("characterCounts", JSON.stringify(characterCountDict));
     updateCharacterCount(characterCountDict, playerCount, travelerCount);
 }
+
+
