@@ -493,9 +493,6 @@ if (seatingForm) {
             .map(name => name.trim())
             .filter(Boolean);
 
-        if (names.includes("sam") || names.includes("Sam") || names.includes("SAM")) {
-            displayEasterEgg(2809);
-        }
         sessionStorage.setItem("playerNames", JSON.stringify(names));
         const seatStatuses = getSeatStatuses().slice(0, names.length);
         while (seatStatuses.length < names.length) {
