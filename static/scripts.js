@@ -14,7 +14,7 @@ const talkingButton = document.getElementById("talking-button");
 talkingButton.addEventListener("click", function() {
     const isTalking = talkingButton.getAttribute("aria-pressed") === "true";
     talkingButton.setAttribute("aria-pressed", !isTalking);
-    talkingButton.textContent = !isTalking ? "You must have permission from the stroyteller to speak" : "Everybody is free to speak publicly or privately";
+    talkingButton.textContent = !isTalking ? "Hell's Librarian is in play" : "Please dicuss one at a time";
 });
 
 if (audioToggleButton) {
