@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 scrape.py
+scrape2.py
 botc_icons/
 data/*.db
 generated_script.json
