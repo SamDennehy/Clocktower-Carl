@@ -599,6 +599,9 @@ function updateCharacterCount(characterCountDict, playerCount, travelerCount) {
         return;
     }
 
+    const names = JSON.parse(sessionStorage.getItem("playerNames") || "[]");
+    const name = names[Math.floor(Math.random() * names.length)] || "Someone";
+
     characterCountContainer.innerHTML = `
         <p class="player-count">Players: ${playerCount + travelerCount}</p>
         <p class="townsfolk-count">T: ${characterCountDict.townsfolk}</p>
@@ -607,6 +610,7 @@ function updateCharacterCount(characterCountDict, playerCount, travelerCount) {
         <p class="demon-count">D: ${characterCountDict.demons}</p>
         <p class="traveler-count">Tr: ${characterCountDict.travelers}</p>
         <p class="need-travelers-message">${characterCountDict.needTravelers ? "Travelers required in order to proceed!" : ""}</p>
+        <p class="need-travelers-message">${playerCount + travelerCount > 20 ? `Kick ${name} out there's too many players!` : ""}</p>
     `;
 }
 
