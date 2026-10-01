@@ -611,7 +611,7 @@ function updateCharacterCount(characterCountDict, playerCount, travelerCount) {
         <p class="traveler-count">Tr: ${characterCountDict.travelers}</p>
         <p class="need-travelers-message">${characterCountDict.needTravelers ? "Travelers required in order to proceed!" : ""}</p>
         <p class="need-travelers-message">${playerCount + travelerCount < 5 ? "More players required in order to proceed!" : ""}</p>
-        <p class="need-travelers-message">${playerCount + travelerCount > 20 ? `Kick ${name} out there's too many players!` : ""}</p>
+        <p class="need-travelers-message">${playerCount + travelerCount > 20 ? `Kick ${name.replace("[Tr]", "").trim()} out there's too many players!` : ""}</p>
     `;
 }
 
