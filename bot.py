@@ -2,9 +2,11 @@ import asyncio
 import json
 import os
 from random import sample
+from threading import RLock
 import time
 import tempfile
 
+from cachetools import LRUCache, TTLCache
 import discord
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
@@ -13,6 +15,9 @@ from psycopg import Connection
 import edge_tts
 
 logs = []
+cache_lock = RLock()
+player_stats_cache = LRUCache(maxsize=1000)
+leaderboard_cache = LRUCache(maxsize=1000)
 
 def add_log(message):
     logs.append(f"{message} {time.strftime('%Y-%m-%d %H:%M:%S')}")
@@ -202,11 +207,20 @@ def record_game_result(discord_id, alignment, character_type, script, result):
 
             connection.commit()
 
+    with cache_lock:
+        player_stats_cache.pop(discord_id, None)
+        leaderboard_cache.clear()
+
     add_log((
         f"Recorded game result for Discord ID {discord_id}: "
         f"{alignment} {character_type} - {result} - {script_dict.get(script, script)}"
     ))
 def get_player_stats(discord_id):
+    with cache_lock:
+        cached_stats = player_stats_cache.get(discord_id)
+        if cached_stats is not None:
+            return cached_stats
+
     add_log(f"Fetching stats for Discord ID {discord_id}")
     with pool.connection() as connection:
         with connection.cursor() as cursor:
@@ -219,7 +233,12 @@ def get_player_stats(discord_id):
                 (discord_id,),
             )
 
-            return cursor.fetchone()
+            stats = cursor.fetchone()
+
+    with cache_lock:
+        player_stats_cache[discord_id] = stats
+
+    return stats
 
 
 scripts = [
@@ -1086,7 +1105,13 @@ async def create_leaderboard_embed(top_players, title, members=None):
     return embed
 
 
-async def get_win_leaderboard(members):
+async def get_win_leaderboard(guild_id, members):
+    cache_key = (guild_id, "overall")
+    with cache_lock:
+        cached_leaderboard = leaderboard_cache.get(cache_key)
+        if cached_leaderboard is not None:
+            return cached_leaderboard
+
     add_log("Fetching overall leaderboard")
     with pool.connection() as connection:
         with connection.cursor() as cursor:
@@ -1129,9 +1154,18 @@ async def get_win_leaderboard(members):
         if len(top_players) == 10:
             break
 
+    with cache_lock:
+        leaderboard_cache[cache_key] = top_players
+
     return top_players
 
-async def get_good_leaderboard(members):
+async def get_good_leaderboard(guild_id, members):
+    cache_key = (guild_id, "good")
+    with cache_lock:
+        cached_leaderboard = leaderboard_cache.get(cache_key)
+        if cached_leaderboard is not None:
+            return cached_leaderboard
+
     add_log("Fetching good leaderboard")
     with pool.connection() as connection:
         with connection.cursor() as cursor:
@@ -1169,9 +1203,18 @@ async def get_good_leaderboard(members):
         if len(top_players) == 10:
             break
 
+    with cache_lock:
+        leaderboard_cache[cache_key] = top_players
+
     return top_players
 
-async def get_evil_leaderboard(members):
+async def get_evil_leaderboard(guild_id, members):
+    cache_key = (guild_id, "evil")
+    with cache_lock:
+        cached_leaderboard = leaderboard_cache.get(cache_key)
+        if cached_leaderboard is not None:
+            return cached_leaderboard
+
     add_log("Fetching evil leaderboard")
     with pool.connection() as connection:
         with connection.cursor() as cursor:
@@ -1208,13 +1251,17 @@ async def get_evil_leaderboard(members):
         if len(top_players) == 10:
             break
 
+    with cache_lock:
+        leaderboard_cache[cache_key] = top_players
+
     return top_players
 
 
 class LeaderboardView(discord.ui.View):
-    def __init__(self, user, members):
+    def __init__(self, user, guild_id, members):
         super().__init__(timeout=300)
         self.user = user
+        self.guild_id = guild_id
         self.members = members
 
     @discord.ui.select(
@@ -1242,14 +1289,14 @@ class LeaderboardView(discord.ui.View):
         choice = select.values[0]
         add_log(f"Selected leaderboard: {choice}")
         if choice == "overall":
-            top_players = await get_win_leaderboard(self.members)
+            top_players = await get_win_leaderboard(self.guild_id, self.members)
             title = "Top 10 Players by Overall Win Rate (minimum 15 games)"
 
         elif choice == "good":
-            top_players = await get_good_leaderboard(self.members)
+            top_players = await get_good_leaderboard(self.guild_id, self.members)
             title = "Top 10 Players by Good Win Rate (minimum 15 games)"
         elif choice == "evil":
-            top_players = await get_evil_leaderboard(self.members)
+            top_players = await get_evil_leaderboard(self.guild_id, self.members)
             title = "Top 10 Players by Evil Win Rate (minimum 15 games)"
 
         add_log(f"Creating leaderboard embed for {title} with {len(top_players)} players")
@@ -1274,9 +1321,10 @@ class LeaderboardView(discord.ui.View):
 )
 async def leaderboard(interaction: discord.Interaction):
     add_log(f"Displaying leaderboard for Discord ID {interaction.user.id}")
+    guild_id = interaction.guild.id
     members = {member.id: member for member in interaction.guild.members}
 
-    top_players = await get_win_leaderboard(members)
+    top_players = await get_win_leaderboard(guild_id, members)
 
     if not top_players:
         await interaction.response.send_message(
@@ -1293,7 +1341,7 @@ async def leaderboard(interaction: discord.Interaction):
 
     await interaction.response.send_message(
         embed=embed,
-        view=LeaderboardView(interaction.user, members),
+        view=LeaderboardView(interaction.user, guild_id, members),
         ephemeral=False,
     )
 
