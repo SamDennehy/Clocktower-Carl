@@ -1829,6 +1829,7 @@ def run_bot():
     if not TOKEN:
         add_log("ERROR: DISCORD_TOKEN environment variable is not set!")
         return
-    
+
+    bot.http.connector = discord.utils.MISSING
     add_log("Starting Discord bot...")
     bot.run(TOKEN)
