@@ -468,25 +468,27 @@ async def check_database():
         reset_database_pool()
 @bot.event
 async def on_ready():
-    global bot_loop
+    global bot_loop, character_emojis, synced
     bot_loop = asyncio.get_running_loop()
     add_log("bot_loop set to: " + str(bot_loop))
-
-    global character_emojis
 
     add_log("Bot is ready and connected to Discord.")
 
     add_log("READY EVENT FIRED")
 
-    add_log("API REQUEST: fetch_application_emojis()")
-    emojis = await bot.fetch_application_emojis()
-    add_log(f"API RESPONSE: received {len(emojis)} application emojis")
+    if not synced:
+        add_log("API REQUEST: fetch_application_emojis()")
+        emojis = await bot.fetch_application_emojis()
+        add_log(f"API RESPONSE: received {len(emojis)} application emojis")
 
-    character_emojis = {emoji.name: str(emoji) for emoji in emojis}
+        character_emojis = {emoji.name: str(emoji) for emoji in emojis}
 
-    add_log("API REQUEST: bot.tree.sync()")
-    synced_commands = await bot.tree.sync()
-    add_log(f"API RESPONSE: synced {len(synced_commands)} commands")
+        add_log("API REQUEST: bot.tree.sync()")
+        synced_commands = await bot.tree.sync()
+        add_log(f"API RESPONSE: synced {len(synced_commands)} commands")
+        synced = True
+    else:
+        add_log("Skipping application emoji fetch and command sync; already initialized.")
 
     add_log(f"Logged in successfully as {bot.user.name}")
 
@@ -1334,24 +1336,32 @@ async def leaderboard(interaction: discord.Interaction):
 
     top_players = await get_win_leaderboard(guild_id, members)
 
-    if not top_players:
-        await interaction.response.send_message(
-            "No players have recorded enough games for the leaderboard.",
-            ephemeral=True,
+    try:
+        if not top_players:
+            await interaction.response.send_message(
+                "No players have recorded enough games for the leaderboard.",
+                ephemeral=True,
+            )
+            return
+
+        embed = await create_leaderboard_embed(
+            top_players,
+            "Top 10 Players by Overall Win Rate (minimum 15 games)",
+            members,
         )
-        return
 
-    embed = await create_leaderboard_embed(
-        top_players,
-        "Top 10 Players by Overall Win Rate (minimum 15 games)",
-        members,
-    )
-
-    await interaction.response.send_message(
-        embed=embed,
-        view=LeaderboardView(interaction.user, guild_id, members),
-        ephemeral=False,
-    )
+        await interaction.response.send_message(
+            embed=embed,
+            view=LeaderboardView(interaction.user, guild_id, members),
+            ephemeral=False,
+        )
+    except discord.HTTPException as error:
+        response = getattr(error, "response", None)
+        retry_after = getattr(response, "headers", {}).get("Retry-After")
+        add_log(
+            "LEADERBOARD RESPONSE FAILED: "
+            f"status={error.status} code={error.code} retry_after={retry_after}"
+        )
 
 
 @bot.tree.command(
