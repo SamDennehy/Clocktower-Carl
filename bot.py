@@ -22,7 +22,7 @@ leaderboard_cache = LRUCache(maxsize=1000)
 
 def add_log(message):
     logs.append(f"{message} {time.strftime('%Y-%m-%d %H:%M:%S')}")
-    print(message)
+    print(message, flush=True)
 
 def get_logs():
     return logs

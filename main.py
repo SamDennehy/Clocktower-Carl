@@ -6,6 +6,7 @@ import os
 import tempfile
 import time
 
+import discord
 from dotenv import load_dotenv
 from flask import Flask, abort, redirect, render_template, request, session, url_for
 
@@ -17,6 +18,24 @@ def add_log(message):
 
 def get_logs():
     return bot.get_logs()
+
+
+def parse_discord_http_response(error):
+    response = getattr(error, "response", None)
+    headers = getattr(response, "headers", {})
+    retry_after = headers.get("Retry-After")
+
+    try:
+        retry_after = float(retry_after) if retry_after is not None else None
+    except (TypeError, ValueError):
+        retry_after = None
+
+    return {
+        "status": getattr(error, "status", getattr(response, "status", None)),
+        "code": getattr(error, "code", None),
+        "message": getattr(error, "text", str(error)),
+        "retry_after": retry_after,
+    }
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', os.urandom(32))
@@ -268,19 +287,34 @@ def disable_auto_react():
 
 def start_bot():
     global bot_start_next_attempt, bot_start_delay
+    retry_delay = None
 
     print("STARTING DISCORD BOT THREAD", flush=True)
 
     try:
         bot.run_bot()
+    except discord.HTTPException as error:
+        response = parse_discord_http_response(error)
+        retry_delay = response["retry_after"]
+        if response["status"] == 429:
+            retry_delay = max(retry_delay or 900.0, 60.0)
+        add_log(
+            "DISCORD HTTP ERROR: "
+            f"status={response['status']} code={response['code']} "
+            f"retry_after={response['retry_after']} message={response['message']}"
+        )
     except Exception as e:
         print(f"DISCORD BOT THREAD CRASHED: {e}", flush=True)
         import traceback
         traceback.print_exc()
     finally:
         with bot_thread_lock:
-            bot_start_next_attempt = time.monotonic() + bot_start_delay
-            bot_start_delay = min(bot_start_delay * 2, 300.0)
+            if retry_delay is None:
+                retry_delay = bot_start_delay
+                bot_start_delay = min(bot_start_delay * 2, 300.0)
+            else:
+                bot_start_delay = 5.0
+            bot_start_next_attempt = time.monotonic() + retry_delay
 
 
 def ensure_bot_started():
