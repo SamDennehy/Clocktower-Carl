@@ -11,11 +11,13 @@ let screamingToggle = true;
 let timerCrazyTimeout;
 const talkingButton = document.getElementById("talking-button");
 
-talkingButton.addEventListener("click", function() {
-    const isTalking = talkingButton.getAttribute("aria-pressed") === "true";
-    talkingButton.setAttribute("aria-pressed", !isTalking);
-    talkingButton.textContent = !isTalking ? "Hell's Librarian is in play" : "Please dicuss one at a time";
-});
+if (talkingButton) {
+    talkingButton.addEventListener("click", function() {
+        const isTalking = talkingButton.getAttribute("aria-pressed") === "true";
+        talkingButton.setAttribute("aria-pressed", !isTalking);
+        talkingButton.textContent = !isTalking ? "Hell's Librarian is in play" : "Please dicuss one at a time";
+    });
+}
 
 if (audioToggleButton) {
     audioToggleButton.addEventListener("click", function() {
