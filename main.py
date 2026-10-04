@@ -24,6 +24,8 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 bot_thread = None
 bot_thread_lock = threading.Lock()
+bot_start_next_attempt = 0.0
+bot_start_delay = 5.0
 DASHBOARD_ENDPOINTS = {
     'dashboard',
     'logs_page',
@@ -265,6 +267,8 @@ def disable_auto_react():
     return f"Auto-react disabled successfully.", 204
 
 def start_bot():
+    global bot_start_next_attempt, bot_start_delay
+
     print("STARTING DISCORD BOT THREAD", flush=True)
 
     try:
@@ -273,6 +277,10 @@ def start_bot():
         print(f"DISCORD BOT THREAD CRASHED: {e}", flush=True)
         import traceback
         traceback.print_exc()
+    finally:
+        with bot_thread_lock:
+            bot_start_next_attempt = time.monotonic() + bot_start_delay
+            bot_start_delay = min(bot_start_delay * 2, 300.0)
 
 
 def ensure_bot_started():
@@ -283,6 +291,8 @@ def ensure_bot_started():
 
     with bot_thread_lock:
         if bot_thread and bot_thread.is_alive():
+            return
+        if time.monotonic() < bot_start_next_attempt:
             return
 
         bot_thread = threading.Thread(target=start_bot, daemon=True, name="discord-bot")
