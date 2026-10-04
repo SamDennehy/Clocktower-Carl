@@ -1,4 +1,5 @@
 import asyncio
+import atexit
 import json
 import os
 from random import sample
@@ -135,6 +136,13 @@ def reset_database_pool():
 
 pool = DatabasePoolWrapper()
 initialize_database_schema()
+
+
+def close_database_pool():
+    pool.close()
+
+
+atexit.register(close_database_pool)
 
 
 def player_exists(discord_id):
