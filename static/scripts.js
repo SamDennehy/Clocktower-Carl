@@ -234,7 +234,20 @@ function startTimer(endTime) {
             sessionStorage.removeItem("timerEndTime");
 
             if (timerCarl) {
-                var chimeAudio = document.getElementById("chime-audio");
+                const timerSoundSelect = timerSoundElement ? timerSoundElement.value : "chimes";
+                switch(timerSoundSelect) {
+                    case "alarm":
+                        timerAudio = document.getElementById("alarm-audio");
+                        break;
+                    case "chimes":
+                        timerAudio = document.getElementById("chime-audio");
+                        break;
+                    case "sean":
+                        timerAudio = document.getElementById("sean-audio");
+                        break;
+                    default:
+                        break;
+                }
                 var changeCarlFaceAndScream = () => {
                     timerCarl.classList.add("timer-expired");
                     timerCrazyTimeout = setTimeout(() => {
@@ -248,10 +261,10 @@ function startTimer(endTime) {
                     }
                 };
 
-                if (chimeAudio && audioToggle) {
-                    chimeAudio.currentTime = 0;
-                    chimeAudio.addEventListener("ended", changeCarlFaceAndScream, { once: true });
-                    chimeAudio.play();
+                if (timerAudio && audioToggle) {
+                    timerAudio.currentTime = 0;
+                    timerAudio.addEventListener("ended", changeCarlFaceAndScream, { once: true });
+                    timerAudio.play();
                 } else {
                     changeCarlFaceAndScream();
                 }

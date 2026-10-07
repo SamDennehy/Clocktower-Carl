@@ -26,6 +26,14 @@
                 <source src="{{ url_for('static', filename='ymca.mp3') }}" type="audio/mpeg">
                 Your browser does not support the audio element.
             </audio>
+            <audio id="alarm-audio">
+                <source src="{{ url_for('static', filename='alarm.mp3') }}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <audio id="sean-audio">
+                <source src="{{ url_for('static', filename='sean.mp3') }}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
             <p id="watching-message" class="watching-message">CARL IS WATCHING</p>
             <div class="timer-carl-stage">
                 <div id="timer-hats" class="timer-hats" aria-hidden="true"></div>
@@ -47,6 +55,11 @@
                 <button type="submit">Set Timer</button>
                 <button type="button" id="toggle-audio-button">Audio On</button>
                 <button type="button" id="toggle-screaming-button">Screaming On</button>
+                <label for="timer-sound">Select Timer Sound:</label>
+                <select id="timer-sound" name="sound">
+                    <option value="chimes">Chimes</option>
+                    <option value="alarm">Alarm</option>
+                </select>
             </form>
         </section>
 
