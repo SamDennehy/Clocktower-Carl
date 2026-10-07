@@ -288,6 +288,11 @@ h1 {
 	font-size: clamp(1rem, 1.5vw, 1.2rem);
 }
 
+.grimoire-shell select option {
+	background-color: rgb(57, 10, 58);
+	color: #ffffff;
+}
+
 .grimoire-shell button {
 	padding: 0.75rem 1rem;
 	background: rgb(128, 47, 128);

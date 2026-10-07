@@ -55,6 +55,11 @@ body {
 	color: #fff4df;
 }
 
+.grimoire-shell select option {
+	background-color: #241027;
+	color: #fff4df;
+}
+
 .grimoire-shell button,
 button,
 .page-navigation button {
