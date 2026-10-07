@@ -276,7 +276,8 @@ h1 {
 	font-weight: 700;
 }
 
-.grimoire-shell input {
+.grimoire-shell input,
+.grimoire-shell select {
 	box-sizing: border-box;
 	width: 100%;
 	padding: 0.7rem 0.85rem;

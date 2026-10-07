@@ -48,6 +48,7 @@ body {
 }
 
 .grimoire-shell input,
+.grimoire-shell select,
 .quantity_selectors input {
 	border-color: #d9a441;
 	background: rgba(255, 248, 232, 0.12);
