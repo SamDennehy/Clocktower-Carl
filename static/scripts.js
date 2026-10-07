@@ -234,6 +234,7 @@ function startTimer(endTime) {
             sessionStorage.removeItem("timerEndTime");
 
             if (timerCarl) {
+                const timerSoundElement = document.getElementById("timer-sound");
                 const timerSoundSelect = timerSoundElement ? timerSoundElement.value : "chimes";
                 switch(timerSoundSelect) {
                     case "alarm":
