@@ -934,17 +934,11 @@ async def display_stats(interaction: discord.Interaction):
     sects_and_violets_games = stats[17]
     sects_and_violets_wins = stats[18]
 
-    teenysville_games = stats[19]
-    teenysville_wins = stats[20]
+    custom_games = stats[19]
+    custom_wins = stats[20]
 
-    custom_games = stats[21]
-    custom_wins = stats[22]
-
-    overall_games = stats[23]
-    overall_wins = stats[24]
-
-    whale_buffet_games = stats[25]
-    whale_buffet_wins = stats[26]
+    overall_games = stats[21]
+    overall_wins = stats[22]
 
     good_games = townsfolk_games + outsider_games + traveller_good_games
     good_wins = townsfolk_wins + outsider_wins + traveller_good_wins
@@ -964,9 +958,7 @@ async def display_stats(interaction: discord.Interaction):
     trouble_brewing_win_rate = (trouble_brewing_wins / trouble_brewing_games) * 100 if trouble_brewing_games > 0 else 0
     bad_moon_rising_win_rate = (bad_moon_rising_wins / bad_moon_rising_games) * 100 if bad_moon_rising_games > 0 else 0
     sects_and_violets_win_rate = (sects_and_violets_wins / sects_and_violets_games) * 100 if sects_and_violets_games > 0 else 0
-    teenysville_win_rate = (teenysville_wins / teenysville_games) * 100 if teenysville_games > 0 else 0
     custom_win_rate = (custom_wins / custom_games) * 100 if custom_games > 0 else 0
-    whale_buffet_win_rate = (whale_buffet_wins / whale_buffet_games) * 100 if whale_buffet_games > 0 else 0
     add_log(f"Calculating win rates for Discord ID {interaction.user.id}")
     embed = discord.Embed(
         title=f"{interaction.user.name}'s Game Stats",
@@ -1048,18 +1040,6 @@ async def display_stats(interaction: discord.Interaction):
     embed.add_field(
         name=character_emojis.get("custom_script", "") + "Custom",
         value=f"Games: {custom_games}, Wins: {custom_wins},\n Win Rate: {custom_win_rate:.2f}%",
-        inline=True,
-    )
-
-    embed.add_field(
-        name=character_emojis.get("custom_script", "") + "Teenysville",
-        value=f"Games: {teenysville_games}, Wins: {teenysville_wins},\n Win Rate: {teenysville_win_rate:.2f}%",
-        inline=True,
-    )
-
-    embed.add_field(
-        name="🐋" + "Whale Buffet",
-        value=f"Games: {whale_buffet_games}, Wins: {whale_buffet_wins},\n Win Rate: {whale_buffet_win_rate:.2f}%",
         inline=True,
     )
 
