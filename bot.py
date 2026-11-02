@@ -82,17 +82,11 @@ def initialize_database_schema():
                     sects_and_violets_games INTEGER DEFAULT 0,
                     sects_and_violets_wins INTEGER DEFAULT 0,
 
-                    teenysville_games INTEGER DEFAULT 0,
-                    teenysville_wins INTEGER DEFAULT 0,
-
                     custom_games INTEGER DEFAULT 0,
                     custom_wins INTEGER DEFAULT 0,
 
                     total_games INTEGER DEFAULT minion_games + demon_games + traveller_evil_games + townsfolk_games + outsider_games + traveller_good_games,
                     total_wins INTEGER DEFAULT minion_wins + demon_wins + traveller_evil_wins + townsfolk_wins + outsider_wins + traveller_good_wins,
-
-                    whale_buffet_games INTEGER DEFAULT 0,
-                    whale_buffet_wins INTEGER DEFAULT 0
                 )
                 """
             )
@@ -769,8 +763,6 @@ class InputScript(discord.ui.View):
             discord.SelectOption(label="Trouble Brewing", value="trouble_brewing"),
             discord.SelectOption(label="Bad Moon Rising", value="bad_moon_rising"),
             discord.SelectOption(label="Sects & Violets", value="sects_and_violets"),
-            discord.SelectOption(label="Teenysville", value="teenysville"),
-            discord.SelectOption(label="Whale Buffet", value="whale_buffet"),
             discord.SelectOption(label="Custom Script", value="custom"),
         ],
     )
@@ -1463,6 +1455,7 @@ class InputMassResults(discord.ui.View):
             )
             return
 
+        
         players = []
         winner = select.values[0]
         for discord_id, role in self.discord_id_role_dict.items():
@@ -1470,7 +1463,7 @@ class InputMassResults(discord.ui.View):
                 category = ""
                 alignment = ""
                 if role in townsfolk:
-                    category = "townsfolk"
+                    category = alingment.TOWNSFOLK# "townsfolk"
                     alignment = "good"
                 elif role in outsiders:
                     category = "outsider"
