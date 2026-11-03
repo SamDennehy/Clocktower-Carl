@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clocktower Carl Leaderboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='carl.ico') }}">
+</head>
+<body>
+    <nav class="page-navigation" aria-label="Page navigation">
+        <button type="button" onclick="window.location.href='/'">Grimoire</button>
+        <button type="button" onclick="window.location.href='/dashboard'">Dashboard</button>
+    </nav>
+    <main class="leaderboard-page">
+        <header class="page-header">
+            <h1>🏆 Leaderboard</h1>
+            <p>Top players across all servers.</p>
+        </header>
+
+        <div class="leaderboard-toggle" role="group" aria-label="Leaderboard type">
+            <button type="button" class="leaderboard-toggle-button active" data-category="overall">Overall</button>
+            <button type="button" class="leaderboard-toggle-button" data-category="good">Good</button>
+            <button type="button" class="leaderboard-toggle-button" data-category="evil">Evil</button>
+        </div>
+
+        <section class="leaderboard" aria-label="Global leaderboard">
+            <div class="leaderboard-heading">
+                <span>Rank</span>
+                <span>Player</span>
+                <span>Win Rate</span>
+            </div>
+            <ol id="leaderboard-list" class="leaderboard-list" aria-live="polite"></ol>
+            <p id="leaderboard-status" class="empty-state" aria-live="polite">Loading leaderboard...</p>
+        </section>
+    </main>
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+</body>
+</html>

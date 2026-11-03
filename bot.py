@@ -85,8 +85,14 @@ def initialize_database_schema():
                     custom_games INTEGER DEFAULT 0,
                     custom_wins INTEGER DEFAULT 0,
 
-                    total_games INTEGER DEFAULT minion_games + demon_games + traveller_evil_games + townsfolk_games + outsider_games + traveller_good_games,
-                    total_wins INTEGER DEFAULT minion_wins + demon_wins + traveller_evil_wins + townsfolk_wins + outsider_wins + traveller_good_wins,
+                    total_games INTEGER GENERATED ALWAYS AS (
+                        minion_games + demon_games + traveller_evil_games +
+                        townsfolk_games + outsider_games + traveller_good_games
+                    ) STORED,
+                    total_wins INTEGER GENERATED ALWAYS AS (
+                        minion_wins + demon_wins + traveller_evil_wins +
+                        townsfolk_wins + outsider_wins + traveller_good_wins
+                    ) STORED
                 )
                 """
             )
@@ -171,41 +177,40 @@ def create_player(discord_id):
 
 
 def record_game_result(discord_id, alignment, character_type, script, result):
-    create_player(discord_id)
-
     character_type_prefix = f"{character_type.lower()}_"
     script_prefix = f"{script.lower().replace(' ', '_')}_"
+    character_games = f"{character_type_prefix}games"
+    character_wins = f"{character_type_prefix}wins"
+    script_games = f"{script_prefix}games"
+    script_wins = f"{script_prefix}wins"
+    add_log(f"Creating player record for Discord ID {discord_id}")
 
     with pool.connection() as connection:
         with connection.cursor() as cursor:
-            if result == "Win":
-                cursor.execute(
-                    f"""
-                    UPDATE player_stats
-                    SET {character_type_prefix}games =
-                            {character_type_prefix}games + 1,
-                        {character_type_prefix}wins =
-                            {character_type_prefix}wins + 1,
-                        {script_prefix}games =
-                            {script_prefix}games + 1,
-                        {script_prefix}wins =
-                            {script_prefix}wins + 1
-                    WHERE discord_id = %s
-                    """,
-                    (discord_id,),
+            character_win = 1 if result == "Win" else 0
+            script_win = 1 if result == "Win" else 0
+            cursor.execute(
+                f"""
+                INSERT INTO player_stats (
+                    discord_id,
+                    {character_games},
+                    {character_wins},
+                    {script_games},
+                    {script_wins}
                 )
-            else:
-                cursor.execute(
-                    f"""
-                    UPDATE player_stats
-                    SET {character_type_prefix}games =
-                            {character_type_prefix}games + 1,
-                        {script_prefix}games =
-                            {script_prefix}games + 1
-                    WHERE discord_id = %s
-                    """,
-                    (discord_id,),
-                )
+                VALUES (%s, 1, %s, 1, %s)
+                ON CONFLICT (discord_id) DO UPDATE
+                SET {character_games} =
+                        player_stats.{character_games} + EXCLUDED.{character_games},
+                    {character_wins} =
+                        player_stats.{character_wins} + EXCLUDED.{character_wins},
+                    {script_games} =
+                        player_stats.{script_games} + EXCLUDED.{script_games},
+                    {script_wins} =
+                        player_stats.{script_wins} + EXCLUDED.{script_wins}
+                """,
+                (discord_id, character_win, script_win),
+            )
 
             connection.commit()
 
@@ -879,7 +884,7 @@ class ConfirmInput(discord.ui.View):
             return
 
         await interaction.response.send_message(
-            f"{interaction.user.mention}, your game results have been recorded.",
+            f"{interaction.user.mention}, your game results have NOT been recorded.",
             ephemeral=True,
         )
 
@@ -1229,6 +1234,110 @@ async def get_evil_leaderboard(guild_id, members):
 
         if member is not None:
             top_players.append((discord_id, wins, games))
+
+        if len(top_players) == 10:
+            break
+
+    with cache_lock:
+        leaderboard_cache[cache_key] = top_players
+
+    return top_players
+
+
+async def get_global_leaderboard(category):
+    leaderboard_queries = {
+        "overall": (
+            """
+            SELECT
+                discord_id,
+                townsfolk_wins + outsider_wins + traveller_good_wins +
+                minion_wins + demon_wins + traveller_evil_wins AS total_wins,
+                townsfolk_games + outsider_games + traveller_good_games +
+                traveller_evil_games + minion_games + demon_games AS total_games
+            FROM player_stats
+            WHERE townsfolk_games + outsider_games + traveller_good_games +
+                  traveller_evil_games + minion_games + demon_games >= 15
+            ORDER BY
+                (townsfolk_wins + outsider_wins + traveller_good_wins +
+                minion_wins + demon_wins + traveller_evil_wins)::float
+                / NULLIF(
+                    townsfolk_games + outsider_games + traveller_good_games +
+                    traveller_evil_games + minion_games + demon_games,
+                    0
+                ) DESC NULLS LAST,
+                townsfolk_games + outsider_games + traveller_good_games +
+                traveller_evil_games + minion_games + demon_games DESC NULLS LAST
+            LIMIT 50
+            """
+        ),
+        "good": (
+            """
+            SELECT
+                discord_id,
+                townsfolk_wins + outsider_wins + traveller_good_wins AS total_wins,
+                townsfolk_games + outsider_games + traveller_good_games AS total_games
+            FROM player_stats
+            WHERE townsfolk_games + outsider_games + traveller_good_games >= 15
+            ORDER BY
+                (townsfolk_wins + outsider_wins + traveller_good_wins)::float
+                / NULLIF(
+                    townsfolk_games + outsider_games + traveller_good_games,
+                    0
+                ) DESC NULLS LAST,
+                townsfolk_games + outsider_games + traveller_good_games DESC NULLS LAST
+            LIMIT 50
+            """
+        ),
+        "evil": (
+            """
+            SELECT
+                discord_id,
+                minion_wins + demon_wins + traveller_evil_wins AS total_wins,
+                traveller_evil_games + minion_games + demon_games AS total_games
+            FROM player_stats
+            WHERE traveller_evil_games + minion_games + demon_games >= 15
+            ORDER BY
+                (minion_wins + demon_wins + traveller_evil_wins)::float
+                / NULLIF(traveller_evil_games + minion_games + demon_games, 0)
+                DESC NULLS LAST,
+                traveller_evil_games + minion_games + demon_games DESC NULLS LAST
+            LIMIT 50
+            """
+        ),
+    }
+
+    if category not in leaderboard_queries:
+        raise ValueError(f"Unknown leaderboard category: {category}")
+
+    cache_key = ("global", category)
+    with cache_lock:
+        cached_leaderboard = leaderboard_cache.get(cache_key)
+        if cached_leaderboard is not None:
+            return cached_leaderboard
+
+    with pool.connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(leaderboard_queries[category])
+            candidates = cursor.fetchall()
+
+    top_players = []
+    for discord_id, wins, games in candidates:
+        try:
+            user = await bot.fetch_user(discord_id)
+        except discord.NotFound:
+            add_log(f"Discord user not found for leaderboard ID {discord_id}")
+            continue
+        except discord.HTTPException as error:
+            add_log(f"Failed to fetch leaderboard user {discord_id}: {error}")
+            continue
+
+        top_players.append({
+            "discord_id": discord_id,
+            "name": user.display_name,
+            "wins": wins,
+            "games": games,
+            "win_rate": round(wins / games * 100, 2) if games else 0,
+        })
 
         if len(top_players) == 10:
             break

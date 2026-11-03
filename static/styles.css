@@ -109,6 +109,70 @@ h1 {
 	flex: 1;
 }
 
+.leaderboard-page {
+	max-width: 760px;
+	margin: 0 auto;
+	padding: 2rem 1rem;
+}
+
+.page-header {
+	text-align: center;
+}
+
+.leaderboard-toggle {
+	display: flex;
+	justify-content: center;
+	gap: 0.5rem;
+	margin: 1.5rem 0;
+}
+
+.leaderboard-toggle-button.active {
+	background: #d4af37;
+	color: #1b1b1b;
+}
+
+.leaderboard {
+	background: rgba(255, 255, 255, 0.08);
+	border-radius: 0.5rem;
+	padding: 1rem;
+}
+
+.leaderboard-heading,
+.leaderboard-row {
+	display: grid;
+	grid-template-columns: 4rem 1fr auto;
+	align-items: center;
+	gap: 1rem;
+}
+
+.leaderboard-heading {
+	font-weight: bold;
+	padding: 0.5rem 1rem;
+}
+
+.leaderboard-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.leaderboard-row {
+	border-top: 1px solid rgba(255, 255, 255, 0.15);
+	padding: 0.85rem 1rem;
+}
+
+.leaderboard-row--top {
+	font-size: 1.1rem;
+}
+
+.leaderboard-rank {
+	text-align: center;
+}
+
+.leaderboard-score {
+	text-align: right;
+}
+
 .grimoire-shell {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

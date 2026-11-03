@@ -10,6 +10,70 @@ const screamingToggleButton = document.getElementById("toggle-screaming-button")
 let screamingToggle = true;
 let timerCrazyTimeout;
 const talkingButton = document.getElementById("talking-button");
+const leaderboardList = document.getElementById("leaderboard-list");
+const leaderboardStatus = document.getElementById("leaderboard-status");
+const leaderboardToggleButtons = document.querySelectorAll(".leaderboard-toggle-button");
+
+function renderLeaderboard(players) {
+    leaderboardList.innerHTML = "";
+    leaderboardStatus.hidden = players.length > 0;
+    leaderboardStatus.textContent = players.length
+        ? ""
+        : "No players have recorded enough games for this leaderboard.";
+
+    players.forEach((player, index) => {
+        const row = document.createElement("li");
+        row.className = `leaderboard-row${index < 3 ? " leaderboard-row--top" : ""}`;
+
+        const rank = document.createElement("span");
+        rank.className = "leaderboard-rank";
+        rank.setAttribute("aria-label", `Rank ${index + 1}`);
+        rank.textContent = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : String(index + 1);
+
+        const name = document.createElement("span");
+        name.className = "leaderboard-player";
+        name.textContent = player.name;
+
+        const score = document.createElement("strong");
+        score.className = "leaderboard-score";
+        score.textContent = `${player.win_rate.toFixed(2)}% (${player.wins}/${player.games})`;
+
+        row.append(rank, name, score);
+        leaderboardList.appendChild(row);
+    });
+}
+
+async function loadLeaderboard(category) {
+    leaderboardStatus.hidden = false;
+    leaderboardStatus.textContent = "Loading leaderboard...";
+
+    try {
+        const response = await fetch(`/api/leaderboard?category=${category}`);
+        if (!response.ok) {
+            throw new Error(`Leaderboard request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+        renderLeaderboard(data.players);
+    } catch (error) {
+        leaderboardList.innerHTML = "";
+        leaderboardStatus.hidden = false;
+        leaderboardStatus.textContent = "Unable to load leaderboard.";
+        console.error("Unable to load leaderboard:", error);
+    }
+}
+
+if (leaderboardList && leaderboardStatus) {
+    leaderboardToggleButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            leaderboardToggleButtons.forEach(toggle => toggle.classList.remove("active"));
+            button.classList.add("active");
+            loadLeaderboard(button.dataset.category);
+        });
+    });
+
+    loadLeaderboard("overall");
+}
 
 if (talkingButton) {
     talkingButton.addEventListener("click", function() {
@@ -636,5 +700,4 @@ function calculateAndUpdateCharacterCount(playerCount, travelerCount) {
     sessionStorage.setItem("characterCounts", JSON.stringify(characterCountDict));
     updateCharacterCount(characterCountDict, playerCount, travelerCount);
 }
-
 

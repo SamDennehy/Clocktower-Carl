@@ -8,7 +8,7 @@ import time
 
 import discord
 from dotenv import load_dotenv
-from flask import Flask, abort, redirect, render_template, request, session, url_for
+from flask import Flask, abort, jsonify, redirect, render_template, request, session, url_for
 
 load_dotenv()
 import bot
@@ -85,6 +85,31 @@ def start_bot_for_request():
 @app.route('/')
 def home():
     return render_template('grimoire.html')
+
+
+@app.route('/leaderboard')
+def leaderboard_page():
+    return render_template('leaderboard.html')
+
+
+@app.route('/api/leaderboard')
+def leaderboard_api():
+    category = request.args.get('category', 'overall')
+    if category not in {'overall', 'good', 'evil'}:
+        return jsonify({"error": "Invalid leaderboard category."}), 400
+
+    if getattr(bot, "bot_loop", None) is None:
+        return jsonify({"error": "Discord bot is not ready yet."}), 503
+
+    future = asyncio.run_coroutine_threadsafe(
+        bot.get_global_leaderboard(category),
+        bot.bot_loop,
+    )
+
+    leaderboard = future.result()
+
+    return jsonify({"category": category, "players": leaderboard})
+
 
 @app.route('/dashboard')
 @dashboard_required
