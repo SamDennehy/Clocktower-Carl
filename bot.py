@@ -1120,7 +1120,7 @@ async def display_stats(interaction: discord.Interaction):
 
     embed.add_field(
         name="📖Storyteller",
-        value=f"Games Hosted: {storyteller_games},\n Host:Play Ratio: {storyteller_games // (gcd(storyteller_games, overall_games) or 1)}:{overall_games // (gcd(storyteller_games, overall_games) or 1)}",
+        value=f"Games Hosted: {storyteller_games},\n Host:Play Ratio: {storyteller_games / overall_games:.2f}:1" if overall_games else "Host:Play Ratio: N/A",
         inline=True,
     )
 
