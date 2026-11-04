@@ -1884,6 +1884,9 @@ async def tts(ctx, *, text: str):
     else:
         await ctx.send(f"Spoke text: {text}")
 
+#This section is completely not optimal it was made quickly to be used as a joke among friends.
+#It may be improved in the future to allow multiple auto reacts to be active at once
+
 REACTION_DISCORD_ID = None
 REACTION_EMOJI = "✅"
 AUTO_REACT = False

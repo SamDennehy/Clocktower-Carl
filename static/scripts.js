@@ -79,7 +79,7 @@ if (talkingButton) {
     talkingButton.addEventListener("click", function() {
         const isTalking = talkingButton.getAttribute("aria-pressed") === "true";
         talkingButton.setAttribute("aria-pressed", !isTalking);
-        talkingButton.textContent = !isTalking ? "Hell's Librarian is in play" : "Please dicuss one at a time";
+        talkingButton.textContent = !isTalking ? "Hell's Librarian is in play" : "Please discuss one at a time";
     });
 }
 
