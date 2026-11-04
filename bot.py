@@ -92,7 +92,9 @@ def initialize_database_schema():
                     total_wins INTEGER GENERATED ALWAYS AS (
                         minion_wins + demon_wins + traveller_evil_wins +
                         townsfolk_wins + outsider_wins + traveller_good_wins
-                    ) STORED
+                    ) STORED,
+
+                    storyteller_games INTEGER DEFAULT 0
                 )
                 """
             )
@@ -898,6 +900,71 @@ async def log_stats(interaction: discord.Interaction):
         ephemeral=True,
     )
 
+@bot.tree.command(name="log_storyteller_game", description="Log a game you hosted as a storyteller")
+async def log_storyteller_game(interaction: discord.Interaction):
+    add_log(f"Logging storyteller game for Discord ID {interaction.user.id}")
+    await interaction.response.send_message(
+        "Would you like to log a storyteller game?",
+        view=ConfirmStorytellerGame(interaction.user),
+        ephemeral=True,
+    )
+
+
+def record_storyteller_game(discord_id):
+    with pool.connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                f"""
+                UPDATE player_stats
+                SET storyteller_games = storyteller_games + 1
+                WHERE discord_id = {discord_id};
+            """
+            )
+        
+
+
+class ConfirmStorytellerGame(discord.ui.View):
+    def __init__(self, user):
+        super().__init__()
+        self.user = user
+
+    @discord.ui.button(label="Confirm", style=discord.ButtonStyle.green)
+    async def confirm_callback(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ):
+        if interaction.user != self.user:
+            await interaction.response.send_message(
+                "This button isn't for you.",
+                ephemeral=True,
+            )
+            return
+
+        record_storyteller_game(interaction.user.id)
+        await interaction.response.send_message(
+            "Your storyteller game has been logged.",
+            ephemeral=True,
+        )
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red)
+    async def cancel_callback(
+        self,
+        interaction: discord.Interaction,
+        button: discord.ui.Button,
+    ):
+        if interaction.user != self.user:
+            await interaction.response.send_message(
+                "This button isn't for you.",
+                ephemeral=True,
+            )
+            return
+
+        await interaction.response.send_message(
+            "Your storyteller game has NOT been logged.",
+            ephemeral=True,
+        )
+
 
 @bot.tree.command(name="display_stats", description="Display your personal game stats")
 async def display_stats(interaction: discord.Interaction):
@@ -944,6 +1011,8 @@ async def display_stats(interaction: discord.Interaction):
 
     overall_games = stats[21]
     overall_wins = stats[22]
+
+    storyteller_games = stats[23]
 
     good_games = townsfolk_games + outsider_games + traveller_good_games
     good_wins = townsfolk_wins + outsider_wins + traveller_good_wins
@@ -1045,6 +1114,12 @@ async def display_stats(interaction: discord.Interaction):
     embed.add_field(
         name=character_emojis.get("custom_script", "") + "Custom",
         value=f"Games: {custom_games}, Wins: {custom_wins},\n Win Rate: {custom_win_rate:.2f}%",
+        inline=True,
+    )
+
+    embed.add_field(
+        name="📖Storyteller",
+        value=f"Games Hosted: {storyteller_games}",
         inline=True,
     )
 
