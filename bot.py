@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 from psycopg_pool import ConnectionPool
 from psycopg import Connection
 import edge_tts
+from math import gcd
 
 logs = []
 cache_lock = RLock()
@@ -1119,7 +1120,13 @@ async def display_stats(interaction: discord.Interaction):
 
     embed.add_field(
         name="📖Storyteller",
-        value=f"Games Hosted: {storyteller_games}",
+        value=f"Games Hosted: {storyteller_games}, Host:Play Ratio: {storyteller_games // (gcd(storyteller_games, overall_games) or 1)}:{overall_games // (gcd(storyteller_games, overall_games) or 1)}"
+        inline=True,
+    )
+
+    embed.add_field(
+        name="⠀",
+        value=f"⠀",
         inline=True,
     )
 
